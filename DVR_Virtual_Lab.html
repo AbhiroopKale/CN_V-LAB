@@ -1,0 +1,729 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Distance Vector Routing — Virtual Lab</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Syne:wght@400;600;800&family=Inter:wght@300;400;500&display=swap" rel="stylesheet"/>
+<style>
+:root{
+  --bg:#0b0f1a;
+  --bg2:#111827;
+  --bg3:#1a2236;
+  --border:#1e2d47;
+  --accent:#3b82f6;
+  --accent2:#06b6d4;
+  --accent3:#8b5cf6;
+  --green:#10b981;
+  --amber:#f59e0b;
+  --red:#ef4444;
+  --text:#e2e8f0;
+  --text2:#94a3b8;
+  --text3:#4b6280;
+  --mono:'JetBrains Mono',monospace;
+  --sans:'Inter',sans-serif;
+  --display:'Syne',sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:14px;line-height:1.6;min-height:100vh}
+
+/* ── NAV ── */
+nav{position:sticky;top:0;z-index:100;background:rgba(11,15,26,0.92);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:4px;padding:0 24px;height:52px}
+.nav-logo{font-family:var(--display);font-weight:800;font-size:15px;color:var(--accent);margin-right:auto;letter-spacing:-.3px}
+.nav-logo span{color:var(--text2);font-weight:400}
+.nav-tab{padding:6px 14px;border-radius:6px;font-size:13px;color:var(--text2);cursor:pointer;border:none;background:none;transition:all .2s;white-space:nowrap}
+.nav-tab:hover{color:var(--text);background:var(--bg3)}
+.nav-tab.active{color:var(--accent);background:rgba(59,130,246,0.12)}
+
+/* ── SECTIONS ── */
+section{display:none;padding:32px 24px;max-width:960px;margin:0 auto;animation:fadeIn .3s ease}
+section.active{display:block}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+
+/* ── TYPOGRAPHY ── */
+h1{font-family:var(--display);font-size:32px;font-weight:800;line-height:1.15;letter-spacing:-.5px}
+h2{font-family:var(--display);font-size:20px;font-weight:600;margin-bottom:12px;color:var(--text)}
+h3{font-size:14px;font-weight:500;color:var(--text2);text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px}
+p{color:var(--text2);line-height:1.75;margin-bottom:12px}
+p:last-child{margin-bottom:0}
+strong{color:var(--text);font-weight:500}
+
+/* ── CARDS ── */
+.card{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:20px 24px;margin-bottom:16px}
+.card-accent{border-left:3px solid var(--accent)}
+.card-green{border-left:3px solid var(--green)}
+.card-amber{border-left:3px solid var(--amber)}
+.card-purple{border-left:3px solid var(--accent3)}
+
+/* ── HERO (Aim section) ── */
+.hero-badge{display:inline-block;background:rgba(59,130,246,0.12);border:1px solid rgba(59,130,246,0.3);color:var(--accent);font-family:var(--mono);font-size:11px;padding:4px 12px;border-radius:20px;margin-bottom:20px;letter-spacing:.05em}
+.hero-title{margin-bottom:16px}
+.hero-title em{color:var(--accent);font-style:normal}
+.info-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-top:20px}
+.info-chip{background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:14px 16px}
+.info-chip .label{font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px}
+.info-chip .value{font-size:14px;color:var(--text);font-weight:500}
+
+/* ── THEORY ── */
+.theory-block{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:20px 24px;margin-bottom:14px}
+.formula-box{background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:16px;font-family:var(--mono);font-size:13px;color:var(--accent2);margin:14px 0;text-align:center;letter-spacing:.03em}
+.highlight-box{background:rgba(139,92,246,0.07);border:1px solid rgba(139,92,246,0.2);border-radius:8px;padding:14px 18px;margin:14px 0}
+.highlight-box p{color:var(--text);margin:0}
+.step-list{counter-reset:steps;list-style:none;margin-top:8px}
+.step-list li{counter-increment:steps;display:flex;gap:12px;margin-bottom:10px;align-items:flex-start}
+.step-list li::before{content:counter(steps);background:rgba(59,130,246,0.15);color:var(--accent);border-radius:50%;width:22px;height:22px;min-width:22px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;margin-top:1px}
+.step-list li span{color:var(--text2)}
+
+/* ── PROCEDURE ── */
+.proc-step{display:flex;gap:16px;margin-bottom:20px;position:relative}
+.proc-step::after{content:'';position:absolute;left:17px;top:40px;bottom:-20px;width:1px;background:var(--border)}
+.proc-step:last-child::after{display:none}
+.proc-num{width:36px;height:36px;min-width:36px;border-radius:50%;background:rgba(59,130,246,0.12);border:1px solid rgba(59,130,246,0.3);display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:13px;color:var(--accent);font-weight:600}
+.proc-content h4{font-size:14px;font-weight:500;color:var(--text);margin-bottom:4px}
+.proc-content p{font-size:13px;margin-bottom:0}
+.observe-box{background:rgba(16,185,129,0.06);border:1px solid rgba(16,185,129,0.2);border-radius:8px;padding:12px 16px;margin-top:8px;font-size:12px;color:var(--green)}
+.observe-box strong{color:var(--green)}
+
+/* ── SIMULATION ── */
+#sim-layout{display:grid;grid-template-columns:1fr 300px;gap:16px}
+@media(max-width:720px){#sim-layout{grid-template-columns:1fr}}
+.sim-toolbar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;align-items:center}
+.sim-toolbar h2{margin:0;flex:1}
+.btn{padding:7px 16px;border-radius:7px;font-size:12px;font-weight:500;cursor:pointer;border:1px solid var(--border);background:var(--bg3);color:var(--text2);transition:all .2s;font-family:var(--mono)}
+.btn:hover{background:var(--bg2);color:var(--text);border-color:var(--text3)}
+.btn.primary{background:rgba(59,130,246,0.15);color:var(--accent);border-color:rgba(59,130,246,0.4)}
+.btn.primary:hover{background:rgba(59,130,246,0.25)}
+.btn.success{background:rgba(16,185,129,0.12);color:var(--green);border-color:rgba(16,185,129,0.3)}
+.btn.success:hover{background:rgba(16,185,129,0.22)}
+.btn.danger{background:rgba(239,68,68,0.1);color:var(--red);border-color:rgba(239,68,68,0.25)}
+.round-badge{background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:5px 12px;font-family:var(--mono);font-size:12px;color:var(--text2)}
+#cvs-wrap{background:var(--bg2);border:1px solid var(--border);border-radius:12px;overflow:hidden}
+canvas{display:block;width:100%}
+.sim-side{}
+.table-panel{background:var(--bg2);border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:12px}
+.table-panel-head{padding:10px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px}
+.router-dot{width:10px;height:10px;border-radius:50%}
+.table-panel-title{font-size:13px;font-weight:500;color:var(--text)}
+.table-panel-sub{font-size:11px;color:var(--text3);margin-left:auto;font-family:var(--mono)}
+.rt-table{width:100%;border-collapse:collapse;font-size:12px;font-family:var(--mono)}
+.rt-table th{padding:6px 12px;color:var(--text3);font-weight:400;font-size:11px;border-bottom:1px solid var(--border);text-align:left}
+.rt-table td{padding:6px 12px;border-bottom:1px solid rgba(30,45,71,0.5);color:var(--text2)}
+.rt-table td:first-child{color:var(--accent2)}
+.rt-table tr:last-child td{border-bottom:none}
+.rt-table tr.new-route td{color:var(--green) !important}
+.rt-table tr.updated-route td{color:var(--amber) !important}
+.rt-table tr.highlight td{background:rgba(59,130,246,0.06)}
+#log-panel{background:var(--bg2);border:1px solid var(--border);border-radius:12px;overflow:hidden}
+#log-panel .table-panel-head{cursor:pointer}
+#log-body{max-height:140px;overflow-y:auto;padding:8px 0}
+.log-entry{padding:4px 14px;font-size:11px;font-family:var(--mono);color:var(--text3);border-left:2px solid transparent}
+.log-entry.info{color:var(--accent);border-color:var(--accent)}
+.log-entry.success{color:var(--green);border-color:var(--green)}
+.log-entry.warn{color:var(--amber);border-color:var(--amber)}
+.select-hint{font-size:12px;color:var(--text3);font-style:italic;padding:16px;text-align:center}
+#speed-wrap{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--text3);font-family:var(--mono)}
+input[type=range]{accent-color:var(--accent);width:80px}
+.convergence-bar{height:4px;background:var(--bg3);border-radius:2px;margin-top:10px;overflow:hidden}
+.convergence-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--green));border-radius:2px;transition:width .5s ease}
+
+/* ── QUIZ ── */
+.quiz-progress{display:flex;gap:6px;margin-bottom:24px}
+.quiz-dot{width:28px;height:4px;border-radius:2px;background:var(--bg3);transition:background .3s}
+.quiz-dot.done{background:var(--green)}
+.quiz-dot.active{background:var(--accent)}
+.quiz-q{font-size:17px;font-weight:500;color:var(--text);margin-bottom:20px;line-height:1.5;font-family:var(--display)}
+.quiz-opts{display:grid;gap:8px;margin-bottom:20px}
+.quiz-opt{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:14px 18px;cursor:pointer;font-size:14px;color:var(--text2);transition:all .2s;text-align:left}
+.quiz-opt:hover:not([disabled]){border-color:var(--accent);color:var(--text);background:rgba(59,130,246,0.05)}
+.quiz-opt.correct{background:rgba(16,185,129,0.1);border-color:var(--green);color:var(--green)}
+.quiz-opt.wrong{background:rgba(239,68,68,0.08);border-color:var(--red);color:var(--red)}
+.quiz-opt[disabled]{cursor:not-allowed}
+.quiz-feedback{font-size:13px;padding:12px 16px;border-radius:8px;margin-bottom:16px}
+.quiz-feedback.correct{background:rgba(16,185,129,0.08);border:1px solid rgba(16,185,129,0.2);color:var(--green)}
+.quiz-feedback.wrong{background:rgba(239,68,68,0.07);border:1px solid rgba(239,68,68,0.2);color:var(--red)}
+.quiz-score{text-align:center;padding:32px}
+.quiz-score .score-num{font-family:var(--display);font-size:64px;font-weight:800;color:var(--accent);line-height:1}
+.quiz-score .score-label{color:var(--text2);margin:8px 0 20px}
+
+/* ── ABOUT ── */
+.team-card{display:flex;gap:16px;align-items:flex-start}
+.avatar{width:44px;height:44px;min-width:44px;border-radius:50%;background:rgba(59,130,246,0.15);border:1px solid rgba(59,130,246,0.3);display:flex;align-items:center;justify-content:center;font-family:var(--display);font-weight:800;color:var(--accent);font-size:16px}
+
+/* ── SCROLLBAR ── */
+::-webkit-scrollbar{width:4px;height:4px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+
+/* ── RESPONSIVE ── */
+@media(max-width:600px){
+  nav{padding:0 12px;overflow-x:auto;gap:0}
+  .nav-tab{padding:6px 10px;font-size:12px}
+  section{padding:20px 14px}
+  h1{font-size:24px}
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-logo">DVR<span>Lab</span></div>
+  <button class="nav-tab active" onclick="showSection('aim',this)">Aim</button>
+  <button class="nav-tab" onclick="showSection('theory',this)">Theory</button>
+  <button class="nav-tab" onclick="showSection('procedure',this)">Procedure</button>
+  <button class="nav-tab" onclick="showSection('simulation',this)">Simulation</button>
+  <button class="nav-tab" onclick="showSection('quiz',this)">Quiz</button>
+  <button class="nav-tab" onclick="showSection('about',this)">About</button>
+</nav>
+
+<!-- ════════════════════════════════════════ AIM ════════════════════════════════════════ -->
+<section id="aim" class="active">
+  <div class="hero-badge">EXPERIMENT 04 &nbsp;·&nbsp; COMPUTER NETWORKS LAB</div>
+  <h1 class="hero-title">Distance Vector<br/><em>Routing Protocol</em></h1>
+  <p style="font-size:16px;color:var(--text2);margin-bottom:24px;max-width:560px">An interactive virtual laboratory to study and simulate the Distance Vector Routing algorithm, a foundational concept in computer networking.</p>
+
+  <div class="card card-accent">
+    <h2>Aim</h2>
+    <p>To study and simulate the <strong>Distance Vector Routing (DVR) algorithm</strong> — understand how routers dynamically build and update routing tables by exchanging distance information with directly connected neighbours, and observe the process of network convergence using the <strong>Bellman-Ford equation</strong>.</p>
+  </div>
+
+  <div class="info-grid">
+    <div class="info-chip"><div class="label">Subject</div><div class="value">Computer Networks</div></div>
+    <div class="info-chip"><div class="label">Topic</div><div class="value">Dynamic Routing</div></div>
+    <div class="info-chip"><div class="label">Duration</div><div class="value">2–3 Hours</div></div>
+    <div class="info-chip"><div class="label">Difficulty</div><div class="value">Intermediate</div></div>
+    <div class="info-chip"><div class="label">Algorithm</div><div class="value">Bellman-Ford</div></div>
+    <div class="info-chip"><div class="label">Protocol</div><div class="value">RIP (v1 / v2)</div></div>
+  </div>
+
+  <div class="card" style="margin-top:20px">
+    <h2>Learning Outcomes</h2>
+    <ul class="step-list">
+      <li><span>Understand how routing tables are initialised and updated in a dynamic network.</span></li>
+      <li><span>Trace the propagation of routing information round-by-round until convergence.</span></li>
+      <li><span>Apply the Bellman-Ford equation to compute shortest paths hop-by-hop.</span></li>
+      <li><span>Identify problems of Distance Vector routing such as Count-to-Infinity.</span></li>
+      <li><span>Relate theoretical knowledge to real-world protocols such as RIP.</span></li>
+    </ul>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════ THEORY ════════════════════════════════════════ -->
+<section id="theory">
+  <h1>Theory</h1>
+
+  <div class="theory-block card-accent" style="border-left:3px solid var(--accent)">
+    <h2>1. What is Routing?</h2>
+    <p>Routing is the process of selecting a path for traffic in a network from source to destination. A <strong>router</strong> is a network device that forwards data packets between networks based on its <strong>routing table</strong> — a data structure stored in memory that maps destination networks to outgoing links and associated costs.</p>
+    <p>Routing algorithms are classified into two types:</p>
+    <ul class="step-list">
+      <li><span><strong>Static Routing</strong> — routes are manually configured by an administrator. Simple, but does not adapt to network changes.</span></li>
+      <li><span><strong>Dynamic Routing</strong> — routers automatically discover paths and update tables using algorithms. Adapts to topology changes in real time.</span></li>
+    </ul>
+  </div>
+
+  <div class="theory-block" style="border-left:3px solid var(--accent2)">
+    <h2>2. Distance Vector Routing</h2>
+    <p>Distance Vector Routing (DVR) is a <strong>dynamic routing algorithm</strong> based on the principle that each router maintains a table (the distance vector) listing the best-known distance to each destination and the interface to use. This table is initialised with directly connected networks and updated iteratively.</p>
+    <p>Key characteristics:</p>
+    <ul class="step-list">
+      <li><span>Each router only knows about its <strong>direct neighbours</strong> — not the full network topology.</span></li>
+      <li><span>Routers periodically share their entire routing table with all neighbours (<strong>"routing by rumour"</strong>).</span></li>
+      <li><span>On receiving a neighbour's table, a router computes new distances and updates its own table if a shorter path is found.</span></li>
+      <li><span>The algorithm converges when no router's table changes in a round.</span></li>
+    </ul>
+  </div>
+
+  <div class="theory-block" style="border-left:3px solid var(--accent3)">
+    <h2>3. The Bellman-Ford Equation</h2>
+    <p>The mathematical backbone of DVR is the <strong>Bellman-Ford equation</strong>. For a router X trying to reach destination D via neighbour Y:</p>
+    <div class="formula-box">
+      d<sub>X</sub>(D) &nbsp;=&nbsp; min<sub>Y ∈ neighbours(X)</sub> { cost(X, Y) &nbsp;+&nbsp; d<sub>Y</sub>(D) }
+    </div>
+    <p>Where:</p>
+    <ul class="step-list">
+      <li><span><strong>d<sub>X</sub>(D)</strong> = best-known distance from router X to destination D</span></li>
+      <li><span><strong>cost(X, Y)</strong> = cost of the direct link between X and its neighbour Y (usually 1 hop)</span></li>
+      <li><span><strong>d<sub>Y</sub>(D)</strong> = distance as reported by neighbour Y to reach D</span></li>
+    </ul>
+    <div class="highlight-box">
+      <p><strong>Example:</strong> Router A wants to reach Net-55. Neighbour B says it can reach Net-55 in 1 hop. The link A→B costs 1 hop. So A computes: d<sub>A</sub>(55) = 1 + 1 = 2 hops via B.</p>
+    </div>
+  </div>
+
+  <div class="theory-block" style="border-left:3px solid var(--green)">
+    <h2>4. How the Algorithm Works — Step by Step</h2>
+    <ul class="step-list">
+      <li><span><strong>Initialisation:</strong> Each router fills its table with directly connected networks (cost = 1 hop each). All other destinations are unknown (∞).</span></li>
+      <li><span><strong>Exchange:</strong> Every router sends a copy of its routing table to all directly connected neighbours.</span></li>
+      <li><span><strong>Update:</strong> Each router receives neighbour tables, adds 1 hop to each entry (for the link cost), and updates its own table where a shorter path is found.</span></li>
+      <li><span><strong>Repeat:</strong> Exchange and update continue in rounds until no changes occur.</span></li>
+      <li><span><strong>Convergence:</strong> The network is converged when all routers have stable, consistent routing tables with optimal paths to all destinations.</span></li>
+    </ul>
+  </div>
+
+  <div class="theory-block" style="border-left:3px solid var(--amber)">
+    <h2>5. Problems with DVR</h2>
+    <ul class="step-list">
+      <li><span><strong>Slow Convergence:</strong> In large networks, it takes many rounds for information to propagate — routers far apart are slow to learn new routes.</span></li>
+      <li><span><strong>Count-to-Infinity:</strong> When a link fails, routers may loop indefinitely, incrementing the distance to an unreachable destination. This is typically bounded by setting a maximum hop count (e.g., 15 in RIP).</span></li>
+      <li><span><strong>Routing Loops:</strong> Two routers may route packets to each other, forming a loop, until the hop count reaches infinity.</span></li>
+    </ul>
+  </div>
+
+  <div class="theory-block" style="border-left:3px solid var(--red)">
+    <h2>6. Real-World Protocol: RIP</h2>
+    <p>The <strong>Routing Information Protocol (RIP)</strong> is the most well-known implementation of Distance Vector Routing. Originally used in ARPANET, it remains in use today in small networks.</p>
+    <ul class="step-list">
+      <li><span>Uses <strong>hop count</strong> as the metric (max 15 hops; 16 = infinity/unreachable).</span></li>
+      <li><span>Sends routing updates every <strong>30 seconds</strong> to all neighbours.</span></li>
+      <li><span>Uses <strong>split horizon</strong> and <strong>poison reverse</strong> to mitigate routing loops.</span></li>
+      <li><span>Available as RIP v1 (classful) and RIP v2 (classless, supports VLSM and CIDR).</span></li>
+    </ul>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════ PROCEDURE ════════════════════════════════════════ -->
+<section id="procedure">
+  <h1>Procedure</h1>
+  <p style="margin-bottom:24px">Follow these steps carefully to perform the experiment and record your observations.</p>
+
+  <div class="card" style="margin-bottom:24px">
+    <h2>Network Topology Used</h2>
+    <p>This experiment uses a 6-router network (A, B, C, D, E, F) interconnected through 7 networks. Each link has a cost of 1 hop. The topology is the same one used in the Simulation tab.</p>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:8px;margin-top:12px;font-family:var(--mono);font-size:12px">
+      <div class="info-chip"><div class="label">A ↔ B</div><div class="value" style="color:var(--accent2)">Network 14</div></div>
+      <div class="info-chip"><div class="label">B ↔ C</div><div class="value" style="color:var(--accent2)">Network 55</div></div>
+      <div class="info-chip"><div class="label">C ↔ D</div><div class="value" style="color:var(--accent2)">Network 66</div></div>
+      <div class="info-chip"><div class="label">D ↔ E</div><div class="value" style="color:var(--accent2)">Network 08</div></div>
+      <div class="info-chip"><div class="label">E ↔ A</div><div class="value" style="color:var(--accent2)">Network 23</div></div>
+      <div class="info-chip"><div class="label">A ↔ F</div><div class="value" style="color:var(--accent2)">Network 78</div></div>
+      <div class="info-chip"><div class="label">F ↔ C</div><div class="value" style="color:var(--accent2)">Network 92</div></div>
+    </div>
+  </div>
+
+  <div class="proc-step">
+    <div class="proc-num">1</div>
+    <div class="proc-content">
+      <h4>Open the Simulation Tab</h4>
+      <p>Navigate to the <strong>Simulation</strong> tab in this virtual lab. You will see the network topology with 6 routers (A–F) displayed as nodes connected by labelled edges representing networks.</p>
+      <div class="observe-box"><strong>Observe:</strong> Each router initially shows "N routes" = the number of directly connected networks only.</div>
+    </div>
+  </div>
+
+  <div class="proc-step">
+    <div class="proc-num">2</div>
+    <div class="proc-content">
+      <h4>Inspect Initial Routing Tables (Round 0)</h4>
+      <p>Click on each router individually to view its routing table in the right panel. At Round 0, each router only knows its directly connected networks with a cost of 1 hop.</p>
+      <div class="observe-box"><strong>Record:</strong> Write down Router A's initial table. Which networks does it know? What is the next hop for each?</div>
+    </div>
+  </div>
+
+  <div class="proc-step">
+    <div class="proc-num">3</div>
+    <div class="proc-content">
+      <h4>Run Round 1</h4>
+      <p>Click <strong>"▶ Run Round"</strong> button. Each router exchanges its table with all direct neighbours. Watch routers flash amber — this indicates their tables were updated with new information.</p>
+      <div class="observe-box"><strong>Observe:</strong> How many new routes did Router A learn? What is the cost and next hop for each new entry? Notice that entries highlighted in green are newly learned routes.</div>
+    </div>
+  </div>
+
+  <div class="proc-step">
+    <div class="proc-num">4</div>
+    <div class="proc-content">
+      <h4>Continue Running Rounds</h4>
+      <p>Keep clicking "Run Round" and click on Router A (or any router) after each round to inspect its updated table. Use the <strong>Auto-Run</strong> button to animate the process automatically.</p>
+      <div class="observe-box"><strong>Record:</strong> After each round, note how many total routes each router knows. Fill in your observation table.</div>
+    </div>
+  </div>
+
+  <div class="proc-step">
+    <div class="proc-num">5</div>
+    <div class="proc-content">
+      <h4>Observe Convergence</h4>
+      <p>Continue running rounds until the log panel shows <strong>"Tables converged — no changes this round"</strong>. The convergence progress bar will also reach 100%.</p>
+      <div class="observe-box"><strong>Record:</strong> How many rounds did it take to fully converge? What is the final routing table of each router?</div>
+    </div>
+  </div>
+
+  <div class="proc-step">
+    <div class="proc-num">6</div>
+    <div class="proc-content">
+      <h4>Verify Using Bellman-Ford</h4>
+      <p>Manually compute the path from Router A to Network 66 using the Bellman-Ford equation. Trace: A → ? → ? → Net-66. Verify your manual calculation matches the simulation result.</p>
+      <div class="observe-box"><strong>Expected:</strong> A reaches Net-66 in 3 hops via B (A→B→C→Net-66) or via E→D (A→E→D→Net-66). Both paths cost 3 hops.</div>
+    </div>
+  </div>
+
+  <div class="proc-step">
+    <div class="proc-num">7</div>
+    <div class="proc-content">
+      <h4>Reset and Repeat</h4>
+      <p>Click <strong>Reset</strong> and repeat the experiment. This time, focus on a different router (e.g., Router F which is centrally placed) and trace how it learns routes.</p>
+    </div>
+  </div>
+
+  <div class="card card-green">
+    <h2>Observation Table (to be filled manually)</h2>
+    <div style="overflow-x:auto">
+    <table class="rt-table" style="margin-top:8px">
+      <thead><tr><th>Router</th><th>Round 0 Routes</th><th>Round 1 Routes</th><th>Round 2 Routes</th><th>Round 3 Routes</th><th>Converged?</th></tr></thead>
+      <tbody>
+        <tr><td>A</td><td>___</td><td>___</td><td>___</td><td>___</td><td>___</td></tr>
+        <tr><td>B</td><td>___</td><td>___</td><td>___</td><td>___</td><td>___</td></tr>
+        <tr><td>C</td><td>___</td><td>___</td><td>___</td><td>___</td><td>___</td></tr>
+        <tr><td>D</td><td>___</td><td>___</td><td>___</td><td>___</td><td>___</td></tr>
+        <tr><td>E</td><td>___</td><td>___</td><td>___</td><td>___</td><td>___</td></tr>
+        <tr><td>F</td><td>___</td><td>___</td><td>___</td><td>___</td><td>___</td></tr>
+      </tbody>
+    </table>
+    </div>
+  </div>
+
+  <div class="card card-amber" style="margin-top:16px">
+    <h2>Result</h2>
+    <p>The Distance Vector Routing algorithm was successfully simulated. All routers exchanged routing tables with their neighbours over multiple rounds. Using the Bellman-Ford equation, each router iteratively discovered optimal paths to all networks. The network <strong>fully converged in approximately 3–4 rounds</strong>, demonstrating the iterative, distributed nature of dynamic routing.</p>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════ SIMULATION ════════════════════════════════════════ -->
+<section id="simulation">
+  <div class="sim-toolbar">
+    <h2>Simulation</h2>
+    <span class="round-badge" id="round-badge">Round 0</span>
+    <button class="btn primary" id="btn-step">▶ Run Round</button>
+    <button class="btn success" id="btn-auto">⟳ Auto-Run</button>
+    <button class="btn danger" id="btn-reset">↺ Reset</button>
+  </div>
+  <div style="margin-bottom:10px;display:flex;align-items:center;gap:16px">
+    <span style="font-size:12px;color:var(--text3)">Convergence</span>
+    <div class="convergence-bar" style="flex:1"><div class="convergence-fill" id="conv-fill" style="width:0%"></div></div>
+    <span id="conv-pct" style="font-size:12px;font-family:var(--mono);color:var(--text3)">0%</span>
+    <div id="speed-wrap">
+      Speed: <input type="range" id="speed-slider" min="200" max="2000" value="900" step="100"> <span id="speed-label">fast</span>
+    </div>
+  </div>
+  <div id="sim-layout">
+    <div>
+      <div id="cvs-wrap"><canvas id="cvs" height="380"></canvas></div>
+      <p style="font-size:11px;color:var(--text3);margin-top:6px;text-align:center;font-family:var(--mono)">Click router to inspect table &nbsp;·&nbsp; Drag routers to rearrange</p>
+    </div>
+    <div class="sim-side">
+      <div class="table-panel" id="rt-panel">
+        <div class="table-panel-head">
+          <div class="router-dot" id="sel-dot" style="background:var(--accent)"></div>
+          <span class="table-panel-title" id="sel-title">Select a Router</span>
+          <span class="table-panel-sub" id="sel-sub"></span>
+        </div>
+        <div id="rt-body"><div class="select-hint">Click any router on the<br/>canvas to view its table</div></div>
+      </div>
+      <div id="log-panel">
+        <div class="table-panel-head" onclick="toggleLog()">
+          <span class="table-panel-title">Exchange Log</span>
+          <span class="table-panel-sub" id="log-count">0 events</span>
+        </div>
+        <div id="log-body"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════ QUIZ ════════════════════════════════════════ -->
+<section id="quiz">
+  <h1>Knowledge Check</h1>
+  <p style="margin-bottom:24px">Test your understanding of Distance Vector Routing with these questions.</p>
+  <div id="quiz-container"></div>
+</section>
+
+<!-- ════════════════════════════════════════ ABOUT ════════════════════════════════════════ -->
+<section id="about">
+  <h1>About This Lab</h1>
+
+  <div class="card card-accent" style="margin-top:16px">
+    <h2>Overview</h2>
+    <p>This virtual lab was designed as part of the <strong>Computer Networks Laboratory</strong> curriculum for undergraduate engineering students. It provides an interactive, browser-based simulation of the Distance Vector Routing algorithm without requiring any software installation.</p>
+    <p>The simulation faithfully models the exchange of routing tables between routers in a 6-node network, demonstrating iterative convergence through the Bellman-Ford algorithm — the same mechanism used in the real-world <strong>Routing Information Protocol (RIP)</strong>.</p>
+  </div>
+
+  <div class="card" style="margin-top:12px">
+    <h2>Technologies Used</h2>
+    <ul class="step-list">
+      <li><span><strong>HTML5 Canvas</strong> — for drawing the network topology and animations</span></li>
+      <li><span><strong>Vanilla JavaScript</strong> — full DVR algorithm implementation with no dependencies</span></li>
+      <li><span><strong>CSS3</strong> — responsive dark-theme layout with transitions</span></li>
+      <li><span><strong>Google Fonts</strong> — Syne, JetBrains Mono, Inter</span></li>
+    </ul>
+  </div>
+
+  <div class="card card-purple" style="margin-top:12px">
+    <h2>References</h2>
+    <ul class="step-list">
+      <li><span>Tanenbaum, A. S. &amp; Wetherall, D. J. — <em>Computer Networks</em>, 5th Edition, Prentice Hall</span></li>
+      <li><span>Forouzan, B. A. — <em>Data Communications and Networking</em>, 5th Edition, McGraw-Hill</span></li>
+      <li><span>RFC 1058 — Routing Information Protocol (RIP), C. Hedrick, 1988</span></li>
+      <li><span>RFC 2453 — RIP Version 2, G. Malkin, 1998</span></li>
+    </ul>
+  </div>
+</section>
+
+<script>
+/* ═══════════════════ NAV ═══════════════════ */
+function showSection(id,btn){
+  document.querySelectorAll('section').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  if(btn)btn.classList.add('active');
+  if(id==='simulation')setTimeout(()=>resize(),50);
+}
+
+/* ═══════════════════ QUIZ ═══════════════════ */
+const QUESTIONS=[
+  {q:"What equation does Distance Vector Routing use to compute shortest paths?",opts:["Dijkstra's Algorithm","Bellman-Ford Equation","Floyd-Warshall Algorithm","Prim's Algorithm"],ans:1,exp:"DVR uses the Bellman-Ford equation: d_X(D) = min { cost(X,Y) + d_Y(D) } over all neighbours Y."},
+  {q:"In DVR, what information does a router share with its neighbours?",opts:["The full network topology","Its CPU and memory usage","Its entire routing table","Only its directly connected links"],ans:2,exp:"Each router shares its complete routing table — this is called 'routing by rumour' since routers don't see the full topology."},
+  {q:"What is the maximum hop count used by RIP to prevent Count-to-Infinity?",opts:["10","15","255","64"],ans:1,exp:"RIP uses a maximum hop count of 15. A destination with hop count 16 is considered unreachable (infinity)."},
+  {q:"In the 6-router topology (A–F), how many rounds does it take to fully converge?",opts:["1 round","2 rounds","3–4 rounds","10+ rounds"],ans:2,exp:"With 6 routers across 7 networks, convergence is typically achieved in 3–4 rounds as information propagates through the network."},
+  {q:"Which of the following is a known problem with Distance Vector Routing?",opts:["Too fast convergence","Count-to-Infinity problem","Uses too much bandwidth for large tables","All of the above"],ans:1,exp:"The Count-to-Infinity problem occurs when a link fails: routers keep incrementing a distance, thinking a route still exists through each other."},
+  {q:"What does it mean when the simulation log says 'Tables converged'?",opts:["All routers crashed","No router's table changed in this round","A new router joined the network","The algorithm restarted"],ans:1,exp:"Convergence means the algorithm has stabilised — no router found a better path in that round, so all tables are now optimal and consistent."},
+  {q:"Router A is directly connected to Router B (Net-14). B can reach Net-66 in 2 hops. What cost does A compute for Net-66 via B?",opts:["1 hop","2 hops","3 hops","4 hops"],ans:2,exp:"Using Bellman-Ford: cost(A,B) + d_B(66) = 1 + 2 = 3 hops. A will record Net-66 as reachable in 3 hops via B."},
+  {q:"DVR is called 'routing by rumour' because:",opts:["It uses gossip protocols","Routers learn about distant networks only through neighbours, not directly","Routes are randomly selected","It is unreliable and often wrong"],ans:1,exp:"Each router only talks to its direct neighbours. It learns about far-away destinations indirectly — information is passed hop by hop, like a rumour spreading through a crowd."},
+];
+let qIdx=0,qScore=0,qAnswered=false;
+function renderQuiz(){
+  if(qIdx>=QUESTIONS.length){document.getElementById('quiz-container').innerHTML=`<div class="quiz-score"><div class="score-num">${qScore}/${QUESTIONS.length}</div><div class="score-label">Final Score</div><button class="btn primary" onclick="qIdx=0;qScore=0;renderQuiz()" style="margin-top:8px">Try Again ↺</button></div>`;return;}
+  const q=QUESTIONS[qIdx];
+  let dots='';
+  QUESTIONS.forEach((_,i)=>{dots+=`<div class="quiz-dot ${i<qIdx?'done':i===qIdx?'active':''}"></div>`;});
+  document.getElementById('quiz-container').innerHTML=`
+    <div class="quiz-progress">${dots}</div>
+    <div class="quiz-q">${q.q}</div>
+    <div class="quiz-opts">${q.opts.map((o,i)=>`<button class="quiz-opt" id="qo${i}" onclick="answerQ(${i})">${o}</button>`).join('')}</div>
+    <div id="qfeedback"></div>
+    <button class="btn primary" id="qnext" onclick="qIdx++;renderQuiz()" style="display:none">Next Question →</button>`;
+}
+function answerQ(idx){
+  if(qAnswered)return;qAnswered=true;
+  const q=QUESTIONS[qIdx];
+  const correct=idx===q.ans;
+  if(correct)qScore++;
+  document.querySelectorAll('.quiz-opt').forEach((b,i)=>{
+    b.disabled=true;
+    if(i===q.ans)b.classList.add('correct');
+    else if(i===idx)b.classList.add('wrong');
+  });
+  document.getElementById('qfeedback').innerHTML=`<div class="quiz-feedback ${correct?'correct':'wrong'}">${correct?'✓ Correct!':'✗ Incorrect.'} ${q.exp}</div>`;
+  document.getElementById('qnext').style.display='inline-block';
+  qAnswered=false;
+}
+renderQuiz();
+
+/* ═══════════════════ SIMULATION ENGINE ═══════════════════ */
+const ROUTER_DEFS={
+  A:{label:'A',cx:.15,cy:.45,color:'#3b82f6'},
+  B:{label:'B',cx:.42,cy:.12,color:'#8b5cf6'},
+  C:{label:'C',cx:.82,cy:.18,color:'#06b6d4'},
+  D:{label:'D',cx:.84,cy:.65,color:'#10b981'},
+  E:{label:'E',cx:.38,cy:.80,color:'#f59e0b'},
+  F:{label:'F',cx:.60,cy:.45,color:'#ef4444'}
+};
+const LINKS=[
+  {a:'A',b:'B',net:'14'},{a:'B',b:'C',net:'55'},{a:'C',b:'D',net:'66'},
+  {a:'D',b:'E',net:'08'},{a:'E',b:'A',net:'23'},{a:'A',b:'F',net:'78'},{a:'F',b:'C',net:'92'}
+];
+let round=0,tables={},prevTables={},flashMap={},autoTimer=null,selRouter=null,dragging=null,dragOx=0,dragOy=0,logEntries=[];
+const cvs=document.getElementById('cvs');const ctx=cvs.getContext('2d');
+
+function initTables(){
+  tables={};LINKS.forEach(l=>{
+    [l.a,l.b].forEach(r=>{if(!tables[r])tables[r]={};tables[r][l.net]={cost:1,via:l.a===r?l.b:l.a};});
+  });
+}
+function deepCopy(o){return JSON.parse(JSON.stringify(o));}
+function totalRoutes(){let s=0;Object.values(tables).forEach(t=>s+=Object.keys(t).length);return s;}
+const MAX_ROUTES=Object.keys(ROUTER_DEFS).length*LINKS.length;
+
+function runRound(){
+  prevTables=deepCopy(tables);
+  const next=deepCopy(tables);flashMap={};let changed=false;
+  const newLogs=[];
+  Object.keys(ROUTER_DEFS).forEach(r=>{
+    LINKS.forEach(l=>{
+      if(l.a!==r&&l.b!==r)return;
+      const nb=l.a===r?l.b:l.a;
+      Object.entries(tables[nb]).forEach(([net,e])=>{
+        const nc=e.cost+1;
+        if(!next[r][net]||nc<next[r][net].cost){
+          const isNew=!next[r][net];
+          next[r][net]={cost:nc,via:nb};
+          if(!flashMap[r])flashMap[r]={};
+          flashMap[r][net]=isNew?'new':'updated';
+          changed=true;
+          newLogs.push({type:isNew?'info':'warn',msg:`${r} learned Net-${net} via ${nb} (${nc} hop${nc>1?'s':''})`});
+        }
+      });
+    });
+  });
+  tables=next;round++;
+  document.getElementById('round-badge').textContent=`Round ${round}`;
+  if(!changed){newLogs.push({type:'success',msg:'✓ All tables converged — no changes this round'});stopAuto();}
+  logEntries=[...newLogs,...logEntries].slice(0,60);
+  const pct=Math.min(100,Math.round(totalRoutes()/MAX_ROUTES*100));
+  document.getElementById('conv-fill').style.width=pct+'%';
+  document.getElementById('conv-pct').textContent=pct+'%';
+  renderLog();if(selRouter)showRT(selRouter);
+  draw();setTimeout(()=>{flashMap={};draw();},1100);
+}
+
+function resetSim(){
+  stopAuto();round=0;tables={};prevTables={};flashMap={};selRouter=null;logEntries=[];
+  initTables();
+  document.getElementById('round-badge').textContent='Round 0';
+  document.getElementById('conv-fill').style.width='0%';
+  document.getElementById('conv-pct').textContent='0%';
+  document.getElementById('rt-body').innerHTML='<div class="select-hint">Click any router on the<br/>canvas to view its table</div>';
+  document.getElementById('sel-title').textContent='Select a Router';
+  document.getElementById('sel-sub').textContent='';
+  document.getElementById('log-body').innerHTML='';
+  document.getElementById('log-count').textContent='0 events';
+  draw();
+}
+
+function startAuto(){
+  const delay=parseInt(document.getElementById('speed-slider').value);
+  document.getElementById('btn-auto').textContent='⏹ Stop';
+  autoTimer=setInterval(runRound,delay);
+}
+function stopAuto(){clearInterval(autoTimer);autoTimer=null;document.getElementById('btn-auto').textContent='⟳ Auto-Run';}
+document.getElementById('btn-step').addEventListener('click',()=>{stopAuto();runRound();});
+document.getElementById('btn-auto').addEventListener('click',()=>{autoTimer?stopAuto():startAuto();});
+document.getElementById('btn-reset').addEventListener('click',resetSim);
+document.getElementById('speed-slider').addEventListener('input',function(){
+  const v=parseInt(this.value);
+  document.getElementById('speed-label').textContent=v<=400?'fast':v<=900?'medium':'slow';
+  if(autoTimer){stopAuto();startAuto();}
+});
+
+function showRT(rid){
+  selRouter=rid;
+  const def=ROUTER_DEFS[rid];
+  document.getElementById('sel-dot').style.background=def.color;
+  document.getElementById('sel-title').textContent=`Router ${rid}`;
+  const t=tables[rid]||{};
+  const n=Object.keys(t).length;
+  document.getElementById('sel-sub').textContent=`${n} routes`;
+  const flash=flashMap[rid]||{};
+  const nets=Object.keys(t).sort();
+  if(!nets.length){document.getElementById('rt-body').innerHTML='<div class="select-hint">No routes yet</div>';return;}
+  let html='<table class="rt-table"><thead><tr><th>Net</th><th>Cost</th><th>Via</th></tr></thead><tbody>';
+  nets.forEach(net=>{
+    const e=t[net];const cls=flash[net]==='new'?'new-route':flash[net]==='updated'?'updated-route':'';
+    html+=`<tr class="${cls}"><td>${net}</td><td>${e.cost}</td><td>${e.via}</td></tr>`;
+  });
+  html+='</tbody></table>';
+  document.getElementById('rt-body').innerHTML=html;
+}
+
+function renderLog(){
+  document.getElementById('log-count').textContent=logEntries.length+' events';
+  document.getElementById('log-body').innerHTML=logEntries.slice(0,30).map(l=>`<div class="log-entry ${l.type}">${l.msg}</div>`).join('');
+}
+function toggleLog(){
+  const b=document.getElementById('log-body');
+  b.style.display=b.style.display==='none'?'block':'none';
+}
+
+/* ═══════════════════ CANVAS DRAW ═══════════════════ */
+function W(){return cvs.offsetWidth;}
+function Px(r){const w=W();return{x:ROUTER_DEFS[r].cx*w,y:ROUTER_DEFS[r].cy*380};}
+
+function resize(){cvs.width=W();cvs.height=380;draw();}
+function draw(){
+  const w=cvs.width,h=cvs.height;ctx.clearRect(0,0,w,h);
+  // grid dots
+  ctx.fillStyle='rgba(100,130,180,0.07)';
+  for(let x=20;x<w;x+=32)for(let y=20;y<h;y+=32){ctx.beginPath();ctx.arc(x,y,1,0,6.28);ctx.fill();}
+
+  // links
+  LINKS.forEach(l=>{
+    const pa=Px(l.a),pb=Px(l.b);
+    ctx.beginPath();ctx.moveTo(pa.x,pa.y);ctx.lineTo(pb.x,pb.y);
+    ctx.strokeStyle='rgba(100,140,200,0.2)';ctx.lineWidth=1.5;ctx.stroke();
+    const mx=(pa.x+pb.x)/2,my=(pa.y+pb.y)/2;
+    const bw=36,bh=18;
+    ctx.fillStyle='rgba(17,24,39,0.9)';
+    ctx.beginPath();roundRect2(ctx,mx-bw/2,my-bh/2,bw,bh,4);ctx.fill();
+    ctx.strokeStyle='rgba(59,130,246,0.25)';ctx.lineWidth=0.5;ctx.stroke();
+    ctx.font='10px JetBrains Mono,monospace';ctx.fillStyle='rgba(100,170,255,0.8)';
+    ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(l.net,mx,my);
+  });
+
+  // routers
+  Object.keys(ROUTER_DEFS).forEach(r=>{
+    const p=Px(r);const def=ROUTER_DEFS[r];const sel=selRouter===r;
+    const fl=flashMap[r]&&Object.keys(flashMap[r]).length>0;
+    const rad=20;
+    // glow
+    if(sel||fl){
+      ctx.beginPath();ctx.arc(p.x,p.y,rad+8,0,6.28);
+      ctx.fillStyle=fl?'rgba(245,158,11,0.12)':'rgba(59,130,246,0.12)';ctx.fill();
+    }
+    // outer ring
+    ctx.beginPath();ctx.arc(p.x,p.y,rad,0,6.28);
+    ctx.fillStyle=fl?'rgba(245,158,11,0.15)':'rgba(17,24,39,0.95)';ctx.fill();
+    ctx.strokeStyle=fl?'#f59e0b':sel?'#fff':def.color;ctx.lineWidth=sel?2:1.5;ctx.stroke();
+    // inner circle
+    ctx.beginPath();ctx.arc(p.x,p.y,13,0,6.28);
+    ctx.fillStyle=def.color+'22';ctx.fill();
+    // label
+    ctx.font='500 13px Syne,sans-serif';ctx.fillStyle=fl?'#f59e0b':def.color;
+    ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(r,p.x,p.y);
+    // route count
+    const cnt=Object.keys(tables[r]||{}).length;
+    ctx.font='9px JetBrains Mono,monospace';ctx.fillStyle='rgba(148,163,184,0.55)';
+    ctx.fillText(cnt+' rts',p.x,p.y+28);
+  });
+}
+
+function roundRect2(c,x,y,w,h,r){c.moveTo(x+r,y);c.lineTo(x+w-r,y);c.quadraticCurveTo(x+w,y,x+w,y+r);c.lineTo(x+w,y+h-r);c.quadraticCurveTo(x+w,y+h,x+w-r,y+h);c.lineTo(x+r,y+h);c.quadraticCurveTo(x,y+h,x,y+h-r);c.lineTo(x,y+r);c.quadraticCurveTo(x,y,x+r,y);c.closePath();}
+
+function getRouterAt(ex,ey){
+  const rect=cvs.getBoundingClientRect();
+  const sx=cvs.width/rect.width;
+  const mx=(ex-rect.left)*sx,my=(ey-rect.top)*(380/rect.height);
+  for(const r of Object.keys(ROUTER_DEFS)){
+    const p=Px(r);
+    if(Math.hypot(p.x-mx,p.y-my)<24)return r;
+  }return null;
+}
+cvs.addEventListener('mousedown',e=>{const r=getRouterAt(e.clientX,e.clientY);if(r){dragging=r;dragOx=e.clientX;dragOy=e.clientY;}});
+cvs.addEventListener('mousemove',e=>{
+  if(!dragging)return;
+  const rect=cvs.getBoundingClientRect();
+  ROUTER_DEFS[dragging].cx=Math.min(.97,Math.max(.03,(e.clientX-rect.left)/rect.width));
+  ROUTER_DEFS[dragging].cy=Math.min(.93,Math.max(.05,(e.clientY-rect.top)/rect.height));
+  draw();
+});
+cvs.addEventListener('mouseup',e=>{
+  if(dragging&&Math.hypot(e.clientX-dragOx,e.clientY-dragOy)<6){showRT(dragging);}
+  dragging=null;draw();
+});
+cvs.addEventListener('touchstart',e=>{const t=e.touches[0];const r=getRouterAt(t.clientX,t.clientY);if(r){dragging=r;dragOx=t.clientX;dragOy=t.clientY;e.preventDefault();}},{passive:false});
+cvs.addEventListener('touchmove',e=>{
+  if(!dragging)return;const t=e.touches[0];
+  const rect=cvs.getBoundingClientRect();
+  ROUTER_DEFS[dragging].cx=Math.min(.97,Math.max(.03,(t.clientX-rect.left)/rect.width));
+  ROUTER_DEFS[dragging].cy=Math.min(.93,Math.max(.05,(t.clientY-rect.top)/rect.height));
+  draw();e.preventDefault();
+},{passive:false});
+cvs.addEventListener('touchend',e=>{
+  const t=e.changedTouches[0];
+  if(dragging&&Math.hypot(t.clientX-dragOx,t.clientY-dragOy)<10)showRT(dragging);
+  dragging=null;draw();
+});
+
+window.addEventListener('resize',()=>{if(document.getElementById('simulation').classList.contains('active'))resize();});
+initTables();
+setTimeout(()=>{resize();},100);
+</script>
+</body>
+</html>

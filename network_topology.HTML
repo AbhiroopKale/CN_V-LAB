@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Network Topology Visualizer</title>
+
+<style>
+body { margin:0; font-family:Arial; }
+
+/* HEADER */
+.header {
+  display:flex;
+  justify-content:space-between;
+  padding:10px 20px;
+  border-bottom:4px solid orange;
+}
+
+/* TITLE */
+.title {
+  text-align:center;
+  font-size:22px;
+  color:#2a7ab9;
+  margin:20px;
+}
+
+/* LAYOUT */
+.container { display:flex; }
+
+/* SIDEBAR */
+.sidebar {
+  width:200px;
+  padding:20px;
+  border-right:1px solid #ddd;
+}
+
+.sidebar div {
+  margin:10px 0;
+  cursor:pointer;
+}
+
+/* CONTENT */
+.content {
+  flex:1;
+  padding:20px 40px;
+}
+
+.section { display:none; }
+.active { display:block; }
+
+/* SIMULATION */
+#network {
+  width:600px;
+  height:350px;
+  border:1px solid #ccc;
+  position:relative;
+  margin-top:20px;
+}
+
+.node {
+  width:40px;
+  height:40px;
+  background:#2a7ab9;
+  color:white;
+  text-align:center;
+  line-height:40px;
+  border-radius:50%;
+  position:absolute;
+}
+
+.line {
+  position:absolute;
+  height:2px;
+  background:black;
+  transform-origin:left;
+}
+
+.packet {
+  width:10px;
+  height:10px;
+  background:red;
+  border-radius:50%;
+  position:absolute;
+}
+
+/* TABLE */
+table {
+  border-collapse:collapse;
+  width:70%;
+}
+td,th {
+  border:1px solid #ccc;
+  padding:8px;
+}
+</style>
+
+<script>
+function show(id){
+  document.querySelectorAll(".section").forEach(s=>s.classList.remove("active"));
+  document.getElementById(id).classList.add("active");
+}
+
+let edges=[];
+
+/* RESET */
+function clearNet(){
+  network.innerHTML="";
+  edges=[];
+}
+
+/* CREATE NODE */
+function node(id,x,y){
+  let n=document.createElement("div");
+  n.className="node";
+  n.id=id;
+  n.innerText=id;
+  n.style.left=x+"px";
+  n.style.top=y+"px";
+  network.appendChild(n);
+}
+
+/* GET CENTER */
+function center(el){
+  return {
+    x: el.offsetLeft + 20,
+    y: el.offsetTop + 20
+  };
+}
+
+/* CONNECT NODES */
+function connect(a,b){
+  let A=document.getElementById(a);
+  let B=document.getElementById(b);
+
+  let p1=center(A);
+  let p2=center(B);
+
+  let l=document.createElement("div");
+  l.className="line";
+
+  let length=Math.hypot(p2.x-p1.x,p2.y-p1.y);
+
+  l.style.width=length+"px";
+  l.style.left=p1.x+"px";
+  l.style.top=p1.y+"px";
+  l.style.transform=`rotate(${Math.atan2(p2.y-p1.y,p2.x-p1.x)}rad)`;
+
+  network.appendChild(l);
+}
+
+/* STAR */
+function star(){
+  clearNet();
+
+  node("H",280,150);
+
+  let arr=[
+    ["A",100,40],
+    ["B",460,40],
+    ["C",100,260],
+    ["D",460,260]
+  ];
+
+  arr.forEach(p=>node(p[0],p[1],p[2]));
+
+  setTimeout(()=>{
+    arr.forEach(p=>{
+      connect("H",p[0]);
+      edges.push(["H",p[0]]);
+    });
+  },50);
+}
+
+/* BUS */
+function bus(){
+  clearNet();
+
+  let names=["A","B","C","D","E"];
+
+  names.forEach((n,i)=>{
+    node(n,80+i*110,150);
+  });
+
+  setTimeout(()=>{
+    for(let i=0;i<names.length-1;i++){
+      connect(names[i],names[i+1]);
+      edges.push([names[i],names[i+1]]);
+    }
+  },50);
+}
+
+/* RING */
+function ring(){
+  clearNet();
+
+  let pos=[
+    ["A",280,30],
+    ["B",500,150],
+    ["C",280,270],
+    ["D",60,150]
+  ];
+
+  pos.forEach(p=>node(p[0],p[1],p[2]));
+
+  setTimeout(()=>{
+    for(let i=0;i<pos.length;i++){
+      let a=pos[i][0];
+      let b=pos[(i+1)%pos.length][0];
+      connect(a,b);
+      edges.push([a,b]);
+    }
+  },50);
+}
+
+/* PACKET */
+function send(){
+  let i=0;
+
+  function move(){
+    if(i>=edges.length) return;
+
+    let [a,b]=edges[i];
+    let A=document.getElementById(a);
+    let B=document.getElementById(b);
+
+    let p=document.createElement("div");
+    p.className="packet";
+    network.appendChild(p);
+
+    let x=A.offsetLeft,y=A.offsetTop;
+    let dx=(B.offsetLeft-x)/40;
+    let dy=(B.offsetTop-y)/40;
+
+    let s=0;
+
+    let int=setInterval(()=>{
+      x+=dx;y+=dy;
+      p.style.left=x+"px";
+      p.style.top=y+"px";
+
+      if(++s>40){
+        clearInterval(int);
+        p.remove();
+        i++;
+        move();
+      }
+    },20);
+  }
+
+  move();
+}
+</script>
+
+</head>
+
+<body>
+
+<div class="header">
+<div>Virtual Labs</div>
+<div>⭐⭐⭐⭐⭐</div>
+</div>
+
+<div class="title">Network Topology Visualizer</div>
+
+<div class="container">
+
+<div class="sidebar">
+<div onclick="show('aim')">Aim</div>
+<div onclick="show('theory')">Theory</div>
+<div onclick="show('procedure')">Procedure</div>
+<div onclick="show('simulation')">Simulation</div>
+<div onclick="show('pretest')">Pretest</div>
+<div onclick="show('posttest')">Posttest</div>
+<div onclick="show('references')">References</div>
+<div onclick="show('contributors')">Contributors</div>
+<div onclick="show('feedback')">Feedback</div>
+</div>
+
+<div class="content">
+
+<div id="aim" class="section active">
+<h3>Aim</h3>
+<p>To simulate Star, Bus and Ring network topologies.</p>
+</div>
+
+<div id="theory" class="section">
+<h3>Theory</h3>
+<p>
+Network topology defines how devices are connected. Star uses a hub, Bus uses a shared cable, Ring uses circular connection.
+</p>
+</div>
+
+<div id="procedure" class="section">
+<h3>Procedure</h3>
+<ol>
+<li>Select topology</li>
+<li>Click send packet</li>
+<li>Observe transmission</li>
+</ol>
+</div>
+
+<div id="simulation" class="section">
+<h3>Simulation</h3>
+
+<button onclick="star()">Star</button>
+<button onclick="bus()">Bus</button>
+<button onclick="ring()">Ring</button>
+<button onclick="send()">Send Packet</button>
+
+<div id="network"></div>
+
+</div>
+
+<div id="pretest" class="section">
+<h3>Pretest</h3>
+<p>1. Star uses hub</p>
+<p>2. Bus has collision</p>
+<p>3. Ring avoids collision</p>
+<p>4. Hub failure stops network</p>
+<p>5. Bus is cheapest</p>
+</div>
+
+<div id="posttest" class="section">
+<h3>Posttest</h3>
+<p>1. Ring avoids collision</p>
+<p>2. Bus uses single cable</p>
+<p>3. Star depends on hub</p>
+<p>4. Ring failure affects all</p>
+<p>5. Star scalable</p>
+</div>
+
+<div id="references" class="section">
+<h3>References</h3>
+<ul>
+<li>Tanenbaum</li>
+<li>Virtual Labs</li>
+</ul>
+</div>
+
+<div id="contributors" class="section">
+<h3>Contributors</h3>
+
+<table>
+<tr><th>Name</th><th>Email</th><th>Institute</th></tr>
+<tr><td>ABHIROOP KALE</td><td>abhiroop206@gmail.com</td><td>Vidyalankar Institute of Technology</td></tr>
+</table>
+
+<br>
+
+<table>
+<tr><th>Subject Expert</th><th>Institute</th></tr>
+<tr><td>Rakshak Sood</td><td>Vidyalankar Institute of Technology</td></tr>
+</table>
+
+</div>
+
+<div id="feedback" class="section">
+<h3>Feedback</h3>
+<textarea rows="5" cols="50"></textarea><br><br>
+<button>Submit</button>
+</div>
+
+</div>
+</div>
+
+</body>
+</html>
