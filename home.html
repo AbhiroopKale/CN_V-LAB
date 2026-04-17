@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CN Virtual Lab</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@300;600;900&display=swap" rel="stylesheet">
+
+<style>
+:root{
+  --bg:#050a12;
+  --panel:#0b1420;
+  --card:#0f1e30;
+  --border:#1a3050;
+  --cyan:#00d4ff;
+  --purple:#9b59ff;
+  --text:#ddeeff;
+  --text2:#6a9bbf;
+}
+
+body{
+  margin:0;
+  font-family:'Exo 2',sans-serif;
+  background:var(--bg);
+  color:var(--text);
+}
+
+/* HEADER */
+header{
+  display:flex;
+  align-items:center;
+  padding:20px 30px;
+  border-bottom:1px solid var(--border);
+  background:linear-gradient(180deg,rgba(0,212,255,0.05),transparent);
+}
+.logo{
+  width:45px;
+  height:45px;
+  background:linear-gradient(135deg,var(--cyan),var(--purple));
+  border-radius:10px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:22px;
+}
+.title{
+  margin-left:15px;
+}
+.title h1{
+  margin:0;
+  font-size:22px;
+  color:var(--cyan);
+}
+.title p{
+  margin:2px 0 0;
+  font-size:12px;
+  color:var(--text2);
+}
+
+/* HERO */
+.hero{
+  text-align:center;
+  padding:60px 20px 30px;
+}
+.hero h2{
+  font-size:36px;
+  margin-bottom:10px;
+}
+.hero p{
+  color:var(--text2);
+}
+
+/* LAB GRID */
+.container{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(260px,1fr));
+  gap:25px;
+  padding:40px;
+  max-width:1000px;
+  margin:auto;
+}
+
+/* CARD */
+.card{
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:10px;
+  padding:25px;
+  transition:0.3s;
+  position:relative;
+}
+.card:hover{
+  transform:translateY(-6px);
+  border-color:var(--cyan);
+}
+
+/* ICON */
+.icon{
+  font-size:28px;
+  margin-bottom:10px;
+}
+
+/* TITLE */
+.card h3{
+  margin:10px 0;
+  color:var(--cyan);
+}
+
+/* DESC */
+.card p{
+  font-size:14px;
+  color:var(--text2);
+}
+
+/* BUTTON */
+.btn{
+  margin-top:15px;
+  display:inline-block;
+  padding:8px 16px;
+  border-radius:6px;
+  background:rgba(0,212,255,0.1);
+  border:1px solid var(--cyan);
+  color:var(--cyan);
+  cursor:pointer;
+}
+.btn:hover{
+  background:rgba(0,212,255,0.2);
+}
+
+/* FOOTER */
+footer{
+  text-align:center;
+  padding:20px;
+  font-size:12px;
+  color:var(--text2);
+}
+</style>
+</head>
+
+<body>
+
+<header>
+  <div class="logo">🌐</div>
+  <div class="title">
+    <h1>CN Virtual Lab</h1>
+    <p>Computer Networks Interactive Experiments</p>
+  </div>
+</header>
+
+<div class="hero">
+  <h2>Virtual Laboratory</h2>
+  <p>Explore interactive simulations of Computer Networks concepts</p>
+</div>
+
+<div class="container">
+
+  <!-- LAB 1 -->
+  <div class="card">
+    <div class="icon">📡</div>
+    <h3>Selective Repeat ARQ</h3>
+    <p>Learn sliding window protocol with interactive simulation.</p>
+    <button class="btn" onclick="openLab('index.html')">Open Lab</button>
+  </div>
+
+  <!-- LAB 2 -->
+  <div class="card">
+    <div class="icon">🧠</div>
+    <h3>Distance Vector Routing</h3>
+    <p>Simulate routing tables using Bellman-Ford algorithm.</p>
+    <button class="btn" onclick="openLab('DVR_Virtual_Lab.html')">Open Lab</button>
+  </div>
+
+  <!-- LAB 3 -->
+  <div class="card">
+    <div class="icon">🕸️</div>
+    <h3>Network Topology</h3>
+    <p>Visualize Star, Bus, and Ring topologies with animation.</p>
+    <button class="btn" onclick="openLab('network_topology.html')">Open Lab</button>
+  </div>
+
+</div>
+
+<footer>
+  © 2026 CN Virtual Lab Project
+</footer>
+
+<script>
+function openLab(file){
+  window.location.href = file;
+}
+</script>
+
+</body>
+</html>

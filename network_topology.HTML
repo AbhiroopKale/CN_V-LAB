@@ -1,366 +1,990 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>Network Topology Visualizer</title>
-
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Network Topology — Virtual Lab</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Syne:wght@400;600;800&family=Inter:wght@300;400;500&display=swap" rel="stylesheet"/>
 <style>
-body { margin:0; font-family:Arial; }
-
-/* HEADER */
-.header {
-  display:flex;
-  justify-content:space-between;
-  padding:10px 20px;
-  border-bottom:4px solid orange;
+:root{
+  --bg:#0b0f1a;
+  --bg2:#111827;
+  --bg3:#1a2236;
+  --border:#1e2d47;
+  --accent:#3b82f6;
+  --accent2:#06b6d4;
+  --accent3:#8b5cf6;
+  --green:#10b981;
+  --amber:#f59e0b;
+  --red:#ef4444;
+  --pink:#ec4899;
+  --text:#e2e8f0;
+  --text2:#94a3b8;
+  --text3:#4b6280;
+  --mono:'JetBrains Mono',monospace;
+  --sans:'Inter',sans-serif;
+  --display:'Syne',sans-serif;
 }
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:14px;line-height:1.6;min-height:100vh}
 
-/* TITLE */
-.title {
-  text-align:center;
-  font-size:22px;
-  color:#2a7ab9;
-  margin:20px;
-}
+/* ── NAV ── */
+nav{position:sticky;top:0;z-index:100;background:rgba(11,15,26,0.92);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:4px;padding:0 24px;height:52px}
+.nav-logo{font-family:var(--display);font-weight:800;font-size:15px;color:var(--accent);margin-right:auto;letter-spacing:-.3px}
+.nav-logo span{color:var(--text2);font-weight:400}
+.nav-tab{padding:6px 14px;border-radius:6px;font-size:13px;color:var(--text2);cursor:pointer;border:none;background:none;transition:all .2s;white-space:nowrap}
+.nav-tab:hover{color:var(--text);background:var(--bg3)}
+.nav-tab.active{color:var(--accent);background:rgba(59,130,246,0.12)}
 
-/* LAYOUT */
-.container { display:flex; }
+/* ── SECTIONS ── */
+section{display:none;padding:32px 24px;max-width:980px;margin:0 auto;animation:fadeIn .3s ease}
+section.active{display:block}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
 
-/* SIDEBAR */
-.sidebar {
-  width:200px;
-  padding:20px;
-  border-right:1px solid #ddd;
-}
+/* ── TYPOGRAPHY ── */
+h1{font-family:var(--display);font-size:32px;font-weight:800;line-height:1.15;letter-spacing:-.5px}
+h2{font-family:var(--display);font-size:20px;font-weight:600;margin-bottom:12px;color:var(--text)}
+h3{font-size:14px;font-weight:500;color:var(--text2);text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px}
+p{color:var(--text2);line-height:1.75;margin-bottom:12px}
+p:last-child{margin-bottom:0}
+strong{color:var(--text);font-weight:500}
 
-.sidebar div {
-  margin:10px 0;
-  cursor:pointer;
-}
+/* ── CARDS ── */
+.card{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:20px 24px;margin-bottom:16px}
+.card-accent{border-left:3px solid var(--accent)}
+.card-green{border-left:3px solid var(--green)}
+.card-amber{border-left:3px solid var(--amber)}
+.card-purple{border-left:3px solid var(--accent3)}
+.card-pink{border-left:3px solid var(--pink)}
 
-/* CONTENT */
-.content {
-  flex:1;
-  padding:20px 40px;
-}
+/* ── HERO ── */
+.hero-badge{display:inline-block;background:rgba(59,130,246,0.12);border:1px solid rgba(59,130,246,0.3);color:var(--accent);font-family:var(--mono);font-size:11px;padding:4px 12px;border-radius:20px;margin-bottom:20px;letter-spacing:.05em}
+.hero-title{margin-bottom:16px}
+.hero-title em{color:var(--accent);font-style:normal}
+.info-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-top:20px}
+.info-chip{background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:14px 16px}
+.info-chip .label{font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px}
+.info-chip .value{font-size:14px;color:var(--text);font-weight:500}
 
-.section { display:none; }
-.active { display:block; }
+/* ── THEORY ── */
+.theory-block{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:20px 24px;margin-bottom:14px}
+.highlight-box{background:rgba(139,92,246,0.07);border:1px solid rgba(139,92,246,0.2);border-radius:8px;padding:14px 18px;margin:14px 0}
+.highlight-box p{color:var(--text);margin:0}
+.step-list{counter-reset:steps;list-style:none;margin-top:8px}
+.step-list li{counter-increment:steps;display:flex;gap:12px;margin-bottom:10px;align-items:flex-start}
+.step-list li::before{content:counter(steps);background:rgba(59,130,246,0.15);color:var(--accent);border-radius:50%;width:22px;height:22px;min-width:22px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;margin-top:1px}
+.step-list li span{color:var(--text2)}
+.bullet-list{list-style:none;margin-top:8px}
+.bullet-list li{display:flex;gap:10px;margin-bottom:8px;align-items:flex-start;color:var(--text2)}
+.bullet-list li::before{content:'›';color:var(--accent2);font-size:16px;line-height:1.4;min-width:14px}
 
-/* SIMULATION */
-#network {
-  width:600px;
-  height:350px;
-  border:1px solid #ccc;
-  position:relative;
-  margin-top:20px;
-}
+/* ── TOPOLOGY CARDS ── */
+.topo-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:14px;margin-top:16px}
+.topo-card{background:var(--bg2);border:1px solid var(--border);border-radius:12px;overflow:hidden;cursor:pointer;transition:all .25s}
+.topo-card:hover{border-color:var(--accent);transform:translateY(-2px)}
+.topo-card.active-card{border-color:var(--accent);background:rgba(59,130,246,0.06)}
+.topo-canvas-wrap{height:140px;background:var(--bg);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:center;position:relative}
+.topo-canvas-wrap canvas{display:block}
+.topo-card-body{padding:14px 16px}
+.topo-card-title{font-family:var(--display);font-size:15px;font-weight:600;color:var(--text);margin-bottom:4px}
+.topo-card-desc{font-size:12px;color:var(--text3);line-height:1.5}
+.topo-badge{display:inline-block;padding:2px 8px;border-radius:4px;font-size:10px;font-family:var(--mono);margin-right:4px;margin-top:6px}
 
-.node {
-  width:40px;
-  height:40px;
-  background:#2a7ab9;
-  color:white;
-  text-align:center;
-  line-height:40px;
-  border-radius:50%;
-  position:absolute;
-}
+/* ── PROCEDURE ── */
+.proc-step{display:flex;gap:16px;margin-bottom:20px;position:relative}
+.proc-step::after{content:'';position:absolute;left:17px;top:40px;bottom:-20px;width:1px;background:var(--border)}
+.proc-step:last-child::after{display:none}
+.proc-num{width:36px;height:36px;min-width:36px;border-radius:50%;background:rgba(59,130,246,0.12);border:1px solid rgba(59,130,246,0.3);display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:13px;color:var(--accent);font-weight:600}
+.proc-content h4{font-size:14px;font-weight:500;color:var(--text);margin-bottom:4px}
+.proc-content p{font-size:13px;margin-bottom:0}
+.observe-box{background:rgba(16,185,129,0.06);border:1px solid rgba(16,185,129,0.2);border-radius:8px;padding:12px 16px;margin-top:8px;font-size:12px;color:var(--green)}
+.observe-box strong{color:var(--green)}
 
-.line {
-  position:absolute;
-  height:2px;
-  background:black;
-  transform-origin:left;
-}
+/* ── SIMULATION ── */
+#sim-layout{display:grid;grid-template-columns:1fr 310px;gap:16px}
+@media(max-width:740px){#sim-layout{grid-template-columns:1fr}}
+.sim-toolbar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;align-items:center}
+.sim-toolbar h2{margin:0;flex:1}
+.btn{padding:7px 16px;border-radius:7px;font-size:12px;font-weight:500;cursor:pointer;border:1px solid var(--border);background:var(--bg3);color:var(--text2);transition:all .2s;font-family:var(--mono)}
+.btn:hover{background:var(--bg2);color:var(--text);border-color:var(--text3)}
+.btn.primary{background:rgba(59,130,246,0.15);color:var(--accent);border-color:rgba(59,130,246,0.4)}
+.btn.primary:hover{background:rgba(59,130,246,0.25)}
+.btn.success{background:rgba(16,185,129,0.12);color:var(--green);border-color:rgba(16,185,129,0.3)}
+.btn.success:hover{background:rgba(16,185,129,0.22)}
+.btn.danger{background:rgba(239,68,68,0.1);color:var(--red);border-color:rgba(239,68,68,0.25)}
+.btn.active-btn{background:rgba(245,158,11,0.15);color:var(--amber);border-color:rgba(245,158,11,0.4)}
+.topo-selector{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
+.topo-btn{padding:5px 12px;border-radius:6px;font-size:11px;font-family:var(--mono);cursor:pointer;border:1px solid var(--border);background:var(--bg3);color:var(--text3);transition:all .2s}
+.topo-btn:hover{color:var(--text);border-color:var(--text3)}
+.topo-btn.sel{color:var(--accent);background:rgba(59,130,246,0.12);border-color:rgba(59,130,246,0.4)}
+#cvs-wrap{background:var(--bg2);border:1px solid var(--border);border-radius:12px;overflow:hidden}
+canvas#cvs{display:block;width:100%}
+.info-panel{background:var(--bg2);border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:12px}
+.info-panel-head{padding:10px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px}
+.info-panel-title{font-size:13px;font-weight:500;color:var(--text)}
+.info-panel-sub{font-size:11px;color:var(--text3);margin-left:auto;font-family:var(--mono)}
+.info-panel-body{padding:14px}
+.stat-row{display:flex;justify-content:space-between;font-size:12px;font-family:var(--mono);margin-bottom:8px;padding-bottom:8px;border-bottom:1px solid rgba(30,45,71,0.5)}
+.stat-row:last-child{border-bottom:none;margin-bottom:0;padding-bottom:0}
+.stat-key{color:var(--text3)}
+.stat-val{color:var(--accent2)}
+#log-panel{background:var(--bg2);border:1px solid var(--border);border-radius:12px;overflow:hidden}
+#log-panel .info-panel-head{cursor:pointer}
+#log-body{max-height:150px;overflow-y:auto;padding:8px 0}
+.log-entry{padding:4px 14px;font-size:11px;font-family:var(--mono);color:var(--text3);border-left:2px solid transparent}
+.log-entry.info{color:var(--accent);border-color:var(--accent)}
+.log-entry.success{color:var(--green);border-color:var(--green)}
+.log-entry.warn{color:var(--amber);border-color:var(--amber)}
+.log-entry.pink{color:var(--pink);border-color:var(--pink)}
+.node-highlight{background:rgba(59,130,246,0.05)}
+.select-hint{font-size:12px;color:var(--text3);font-style:italic;padding:16px;text-align:center}
+.fault-active{background:rgba(239,68,68,0.08) !important;border-color:rgba(239,68,68,0.3) !important}
+.packet-info{font-size:11px;color:var(--text2);font-family:var(--mono);text-align:center;padding:6px;margin-top:4px}
 
-.packet {
-  width:10px;
-  height:10px;
-  background:red;
-  border-radius:50%;
-  position:absolute;
-}
+/* ── COMPARISON TABLE ── */
+.comp-table{width:100%;border-collapse:collapse;font-size:12px;font-family:var(--mono)}
+.comp-table th{padding:8px 12px;color:var(--text3);font-weight:400;font-size:11px;border-bottom:1px solid var(--border);text-align:left;background:var(--bg3)}
+.comp-table td{padding:8px 12px;border-bottom:1px solid rgba(30,45,71,0.5);color:var(--text2)}
+.comp-table td:first-child{color:var(--accent2);font-weight:500}
+.comp-table tr:last-child td{border-bottom:none}
+.comp-table tr:hover td{background:rgba(59,130,246,0.04)}
+.good{color:var(--green) !important}
+.bad{color:var(--red) !important}
+.mid{color:var(--amber) !important}
 
-/* TABLE */
-table {
-  border-collapse:collapse;
-  width:70%;
-}
-td,th {
-  border:1px solid #ccc;
-  padding:8px;
+/* ── QUIZ ── */
+.quiz-progress{display:flex;gap:6px;margin-bottom:24px}
+.quiz-dot{width:28px;height:4px;border-radius:2px;background:var(--bg3);transition:background .3s}
+.quiz-dot.done{background:var(--green)}
+.quiz-dot.active{background:var(--accent)}
+.quiz-q{font-size:17px;font-weight:500;color:var(--text);margin-bottom:20px;line-height:1.5;font-family:var(--display)}
+.quiz-opts{display:grid;gap:8px;margin-bottom:20px}
+.quiz-opt{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:14px 18px;cursor:pointer;font-size:14px;color:var(--text2);transition:all .2s;text-align:left}
+.quiz-opt:hover:not([disabled]){border-color:var(--accent);color:var(--text);background:rgba(59,130,246,0.05)}
+.quiz-opt.correct{background:rgba(16,185,129,0.1);border-color:var(--green);color:var(--green)}
+.quiz-opt.wrong{background:rgba(239,68,68,0.08);border-color:var(--red);color:var(--red)}
+.quiz-opt[disabled]{cursor:not-allowed}
+.quiz-feedback{font-size:13px;padding:12px 16px;border-radius:8px;margin-bottom:16px}
+.quiz-feedback.correct{background:rgba(16,185,129,0.08);border:1px solid rgba(16,185,129,0.2);color:var(--green)}
+.quiz-feedback.wrong{background:rgba(239,68,68,0.07);border:1px solid rgba(239,68,68,0.2);color:var(--red)}
+.quiz-score{text-align:center;padding:32px}
+.quiz-score .score-num{font-family:var(--display);font-size:64px;font-weight:800;color:var(--accent);line-height:1}
+.quiz-score .score-label{color:var(--text2);margin:8px 0 20px}
+
+/* ── ABOUT ── */
+.team-card{display:flex;gap:16px;align-items:flex-start}
+.avatar{width:44px;height:44px;min-width:44px;border-radius:50%;background:rgba(59,130,246,0.15);border:1px solid rgba(59,130,246,0.3);display:flex;align-items:center;justify-content:center;font-family:var(--display);font-weight:800;color:var(--accent);font-size:16px}
+
+/* ── SCROLLBAR ── */
+::-webkit-scrollbar{width:4px;height:4px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+
+/* ── RESPONSIVE ── */
+@media(max-width:600px){
+  nav{padding:0 8px;overflow-x:auto;gap:0}
+  .nav-tab{padding:6px 8px;font-size:11px}
+  section{padding:20px 12px}
+  h1{font-size:24px}
 }
 </style>
-
-<script>
-function show(id){
-  document.querySelectorAll(".section").forEach(s=>s.classList.remove("active"));
-  document.getElementById(id).classList.add("active");
-}
-
-let edges=[];
-
-/* RESET */
-function clearNet(){
-  network.innerHTML="";
-  edges=[];
-}
-
-/* CREATE NODE */
-function node(id,x,y){
-  let n=document.createElement("div");
-  n.className="node";
-  n.id=id;
-  n.innerText=id;
-  n.style.left=x+"px";
-  n.style.top=y+"px";
-  network.appendChild(n);
-}
-
-/* GET CENTER */
-function center(el){
-  return {
-    x: el.offsetLeft + 20,
-    y: el.offsetTop + 20
-  };
-}
-
-/* CONNECT NODES */
-function connect(a,b){
-  let A=document.getElementById(a);
-  let B=document.getElementById(b);
-
-  let p1=center(A);
-  let p2=center(B);
-
-  let l=document.createElement("div");
-  l.className="line";
-
-  let length=Math.hypot(p2.x-p1.x,p2.y-p1.y);
-
-  l.style.width=length+"px";
-  l.style.left=p1.x+"px";
-  l.style.top=p1.y+"px";
-  l.style.transform=`rotate(${Math.atan2(p2.y-p1.y,p2.x-p1.x)}rad)`;
-
-  network.appendChild(l);
-}
-
-/* STAR */
-function star(){
-  clearNet();
-
-  node("H",280,150);
-
-  let arr=[
-    ["A",100,40],
-    ["B",460,40],
-    ["C",100,260],
-    ["D",460,260]
-  ];
-
-  arr.forEach(p=>node(p[0],p[1],p[2]));
-
-  setTimeout(()=>{
-    arr.forEach(p=>{
-      connect("H",p[0]);
-      edges.push(["H",p[0]]);
-    });
-  },50);
-}
-
-/* BUS */
-function bus(){
-  clearNet();
-
-  let names=["A","B","C","D","E"];
-
-  names.forEach((n,i)=>{
-    node(n,80+i*110,150);
-  });
-
-  setTimeout(()=>{
-    for(let i=0;i<names.length-1;i++){
-      connect(names[i],names[i+1]);
-      edges.push([names[i],names[i+1]]);
-    }
-  },50);
-}
-
-/* RING */
-function ring(){
-  clearNet();
-
-  let pos=[
-    ["A",280,30],
-    ["B",500,150],
-    ["C",280,270],
-    ["D",60,150]
-  ];
-
-  pos.forEach(p=>node(p[0],p[1],p[2]));
-
-  setTimeout(()=>{
-    for(let i=0;i<pos.length;i++){
-      let a=pos[i][0];
-      let b=pos[(i+1)%pos.length][0];
-      connect(a,b);
-      edges.push([a,b]);
-    }
-  },50);
-}
-
-/* PACKET */
-function send(){
-  let i=0;
-
-  function move(){
-    if(i>=edges.length) return;
-
-    let [a,b]=edges[i];
-    let A=document.getElementById(a);
-    let B=document.getElementById(b);
-
-    let p=document.createElement("div");
-    p.className="packet";
-    network.appendChild(p);
-
-    let x=A.offsetLeft,y=A.offsetTop;
-    let dx=(B.offsetLeft-x)/40;
-    let dy=(B.offsetTop-y)/40;
-
-    let s=0;
-
-    let int=setInterval(()=>{
-      x+=dx;y+=dy;
-      p.style.left=x+"px";
-      p.style.top=y+"px";
-
-      if(++s>40){
-        clearInterval(int);
-        p.remove();
-        i++;
-        move();
-      }
-    },20);
-  }
-
-  move();
-}
-</script>
-
 </head>
-
 <body>
 
-<div class="header">
-<div>Virtual Labs</div>
-<div>⭐⭐⭐⭐⭐</div>
-</div>
+<nav>
+  <div class="nav-logo">NET<span>TopoLab</span></div>
+  <button class="nav-tab active" onclick="showSection('aim',this)">Aim</button>
+  <button class="nav-tab" onclick="showSection('theory',this)">Theory</button>
+  <button class="nav-tab" onclick="showSection('procedure',this)">Procedure</button>
+  <button class="nav-tab" onclick="showSection('simulation',this)">Simulation</button>
+  <button class="nav-tab" onclick="showSection('quiz',this)">Quiz</button>
+  <button class="nav-tab" onclick="showSection('about',this)">About</button>
+</nav>
 
-<div class="title">Network Topology Visualizer</div>
+<!-- ═══════════════════════════════════ AIM ═══════════════════════════════════ -->
+<section id="aim" class="active">
+  <div class="hero-badge">EXPERIMENT 05 &nbsp;·&nbsp; COMPUTER NETWORKS LAB</div>
+  <h1 class="hero-title">Network<br/><em>Topology</em></h1>
+  <p style="font-size:16px;color:var(--text2);margin-bottom:24px;max-width:560px">An interactive virtual laboratory to study, compare, and simulate the six fundamental network topologies used in computer networking — from simple Bus to complex Hybrid designs.</p>
 
-<div class="container">
+  <div class="card card-accent">
+    <h2>Aim</h2>
+    <p>To study and simulate the major <strong>Network Topologies</strong> — Bus, Star, Ring, Mesh, Tree, and Hybrid — understand their physical and logical structure, analyse their advantages and disadvantages with respect to <strong>fault tolerance, cost, scalability, and performance</strong>, and observe packet transmission behaviour in each topology.</p>
+  </div>
 
-<div class="sidebar">
-<div onclick="show('aim')">Aim</div>
-<div onclick="show('theory')">Theory</div>
-<div onclick="show('procedure')">Procedure</div>
-<div onclick="show('simulation')">Simulation</div>
-<div onclick="show('pretest')">Pretest</div>
-<div onclick="show('posttest')">Posttest</div>
-<div onclick="show('references')">References</div>
-<div onclick="show('contributors')">Contributors</div>
-<div onclick="show('feedback')">Feedback</div>
-</div>
+  <div class="info-grid">
+    <div class="info-chip"><div class="label">Subject</div><div class="value">Computer Networks</div></div>
+    <div class="info-chip"><div class="label">Topic</div><div class="value">Network Topology</div></div>
+    <div class="info-chip"><div class="label">Duration</div><div class="value">2–3 Hours</div></div>
+    <div class="info-chip"><div class="label">Difficulty</div><div class="value">Beginner–Intermediate</div></div>
+    <div class="info-chip"><div class="label">Topologies</div><div class="value">6 Types</div></div>
+    <div class="info-chip"><div class="label">Experiment</div><div class="value">Fault Simulation</div></div>
+  </div>
 
-<div class="content">
+  <div class="card" style="margin-top:20px">
+    <h2>Learning Outcomes</h2>
+    <ul class="step-list">
+      <li><span>Identify and differentiate between physical and logical network topologies.</span></li>
+      <li><span>Describe the structure, wiring, and data flow of Bus, Star, Ring, Mesh, Tree, and Hybrid topologies.</span></li>
+      <li><span>Analyse trade-offs in cost, scalability, fault tolerance, and performance for each topology.</span></li>
+      <li><span>Simulate packet transmission paths and observe how node/link failures affect each topology.</span></li>
+      <li><span>Choose the appropriate topology for a given real-world networking scenario.</span></li>
+    </ul>
+  </div>
+</section>
 
-<div id="aim" class="section active">
-<h3>Aim</h3>
-<p>To simulate Star, Bus and Ring network topologies.</p>
-</div>
+<!-- ═══════════════════════════════════ THEORY ═══════════════════════════════════ -->
+<section id="theory">
+  <h1>Theory</h1>
 
-<div id="theory" class="section">
-<h3>Theory</h3>
-<p>
-Network topology defines how devices are connected. Star uses a hub, Bus uses a shared cable, Ring uses circular connection.
-</p>
-</div>
+  <div class="theory-block" style="border-left:3px solid var(--accent)">
+    <h2>1. What is Network Topology?</h2>
+    <p>Network topology refers to the <strong>arrangement of nodes (computers, routers, switches) and links (cables, wireless connections)</strong> in a network. It defines how devices are interconnected and how data flows between them.</p>
+    <p>Topology is classified into two types:</p>
+    <ul class="bullet-list">
+      <li><strong>Physical Topology</strong> — the actual physical layout of cables and devices in the network.</li>
+      <li><strong>Logical Topology</strong> — the way data actually travels through the network, regardless of physical arrangement.</li>
+    </ul>
+    <div class="highlight-box">
+      <p>Choosing the right topology affects network <strong>performance, cost, reliability, and scalability</strong>. There is no single "best" topology — the optimal choice depends on the application, budget, and scale.</p>
+    </div>
+  </div>
 
-<div id="procedure" class="section">
-<h3>Procedure</h3>
-<ol>
-<li>Select topology</li>
-<li>Click send packet</li>
-<li>Observe transmission</li>
-</ol>
-</div>
+  <div class="theory-block" style="border-left:3px solid var(--amber)">
+    <h2>2. Bus Topology</h2>
+    <p>In a <strong>Bus topology</strong>, all nodes are connected to a single shared communication line called the <strong>backbone</strong> or bus. Data transmitted by any node travels in both directions along the bus and is received by all nodes — only the intended recipient processes it.</p>
+    <ul class="bullet-list">
+      <li><strong>Terminator resistors</strong> are placed at both ends to prevent signal reflection.</li>
+      <li>Uses <strong>CSMA/CD</strong> (Carrier Sense Multiple Access with Collision Detection) to manage access.</li>
+      <li>A break anywhere in the backbone cable brings down the entire network.</li>
+      <li>Historically used in <strong>10BASE2 (Thinnet) Ethernet</strong> networks.</li>
+    </ul>
+    <p><strong>Advantages:</strong> Inexpensive, easy to install, works well for small networks.<br/>
+    <strong>Disadvantages:</strong> Single point of failure on the backbone, performance degrades with more nodes, difficult to troubleshoot.</p>
+  </div>
 
-<div id="simulation" class="section">
-<h3>Simulation</h3>
+  <div class="theory-block" style="border-left:3px solid var(--accent2)">
+    <h2>3. Star Topology</h2>
+    <p>In a <strong>Star topology</strong>, all nodes are connected to a central device — typically a <strong>switch or hub</strong>. All communication between nodes passes through this central point.</p>
+    <ul class="bullet-list">
+      <li>If a node fails, only that node is affected; the rest of the network continues normally.</li>
+      <li>If the <strong>central switch fails</strong>, the entire network goes down.</li>
+      <li>Easy to add/remove nodes without disrupting the network.</li>
+      <li>Most widely used topology today — found in <strong>Ethernet LANs (100BASE-TX, Gigabit Ethernet)</strong>.</li>
+    </ul>
+    <p><strong>Advantages:</strong> Easy troubleshooting, fault isolation, scalable.<br/>
+    <strong>Disadvantages:</strong> Higher cable cost, central device is a single point of failure.</p>
+  </div>
 
-<button onclick="star()">Star</button>
-<button onclick="bus()">Bus</button>
-<button onclick="ring()">Ring</button>
-<button onclick="send()">Send Packet</button>
+  <div class="theory-block" style="border-left:3px solid var(--green)">
+    <h2>4. Ring Topology</h2>
+    <p>In a <strong>Ring topology</strong>, each node is connected to exactly two other nodes, forming a closed circular loop. Data travels in one direction (unidirectional) or both directions (bidirectional / Dual Ring) around the ring.</p>
+    <ul class="bullet-list">
+      <li>Uses a <strong>token-passing protocol</strong> — only the node holding the token may transmit data.</li>
+      <li>A <strong>single break</strong> in a unidirectional ring can disable the entire network.</li>
+      <li><strong>Dual Ring</strong> (e.g., FDDI) provides redundancy — if one ring fails, the other takes over.</li>
+      <li>Used in <strong>Token Ring (IEEE 802.5)</strong> and <strong>FDDI (Fiber Distributed Data Interface)</strong>.</li>
+    </ul>
+    <p><strong>Advantages:</strong> Equal access, predictable performance, no collisions with token passing.<br/>
+    <strong>Disadvantages:</strong> A node failure can break the ring, slower than star for modern networks.</p>
+  </div>
 
-<div id="network"></div>
+  <div class="theory-block" style="border-left:3px solid var(--accent3)">
+    <h2>5. Mesh Topology</h2>
+    <p>In a <strong>Mesh topology</strong>, every node is connected to every other node, either fully (full mesh) or partially (partial mesh). This provides <strong>maximum redundancy and fault tolerance</strong>.</p>
+    <ul class="bullet-list">
+      <li><strong>Full Mesh:</strong> n nodes require n(n–1)/2 links — very expensive for large networks.</li>
+      <li><strong>Partial Mesh:</strong> Only critical nodes have multiple connections, reducing cost.</li>
+      <li>Data can take multiple paths — if one link fails, traffic is rerouted automatically.</li>
+      <li>Used in <strong>WAN backbone networks, the Internet core, and military networks</strong>.</li>
+    </ul>
+    <p><strong>Advantages:</strong> Highest fault tolerance, multiple data paths, no single point of failure.<br/>
+    <strong>Disadvantages:</strong> Very expensive, complex to install and manage.</p>
+  </div>
 
-</div>
+  <div class="theory-block" style="border-left:3px solid var(--red)">
+    <h2>6. Tree (Hierarchical) Topology</h2>
+    <p>A <strong>Tree topology</strong> is a hierarchical arrangement that looks like a tree with branches. It extends the Star topology by connecting multiple star networks to a common <strong>root bus or backbone</strong>.</p>
+    <ul class="bullet-list">
+      <li>Has a root node, intermediate nodes (switches), and leaf nodes (end devices).</li>
+      <li>Organised in levels — data flows up and down the hierarchy.</li>
+      <li>Used in <strong>campus LANs, corporate networks, and cable TV (CATV) systems</strong>.</li>
+      <li>If a branch switch fails, all nodes below it lose connectivity.</li>
+    </ul>
+    <p><strong>Advantages:</strong> Scalable, organised, easy to manage sections independently.<br/>
+    <strong>Disadvantages:</strong> Backbone failure is catastrophic; complex wiring.</p>
+  </div>
 
-<div id="pretest" class="section">
-<h3>Pretest</h3>
-<p>1. Star uses hub</p>
-<p>2. Bus has collision</p>
-<p>3. Ring avoids collision</p>
-<p>4. Hub failure stops network</p>
-<p>5. Bus is cheapest</p>
-</div>
+  <div class="theory-block" style="border-left:3px solid var(--pink)">
+    <h2>7. Hybrid Topology</h2>
+    <p>A <strong>Hybrid topology</strong> combines two or more different topologies into a single network. Real-world enterprise networks almost always use a hybrid design to balance cost, performance, and redundancy.</p>
+    <ul class="bullet-list">
+      <li>Example: A <strong>Star-Bus hybrid</strong> connects multiple star topologies along a common backbone bus.</li>
+      <li>Another example: <strong>Star-Ring</strong> connects star-configured workgroups in a ring at the core.</li>
+      <li>Provides flexibility — different departments can use the topology best suited to their needs.</li>
+    </ul>
+    <p><strong>Advantages:</strong> Flexible, scalable, fault tolerant when designed well.<br/>
+    <strong>Disadvantages:</strong> Complex to design, configure, and maintain.</p>
+  </div>
 
-<div id="posttest" class="section">
-<h3>Posttest</h3>
-<p>1. Ring avoids collision</p>
-<p>2. Bus uses single cable</p>
-<p>3. Star depends on hub</p>
-<p>4. Ring failure affects all</p>
-<p>5. Star scalable</p>
-</div>
+  <div class="card" style="margin-top:8px;padding:0;overflow:hidden">
+    <div style="padding:16px 20px;border-bottom:1px solid var(--border)"><h2 style="margin:0">8. Comparison Summary</h2></div>
+    <div style="overflow-x:auto">
+    <table class="comp-table">
+      <thead>
+        <tr><th>Topology</th><th>Cost</th><th>Fault Tolerance</th><th>Scalability</th><th>Performance</th><th>Cables Needed</th><th>Use Case</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Bus</td><td class="good">Low</td><td class="bad">Poor</td><td class="bad">Low</td><td class="mid">Medium</td><td>1 backbone</td><td>Legacy LAN</td></tr>
+        <tr><td>Star</td><td class="mid">Medium</td><td class="mid">Medium</td><td class="good">High</td><td class="good">High</td><td>n cables (hub)</td><td>Office LAN</td></tr>
+        <tr><td>Ring</td><td class="mid">Medium</td><td class="mid">Low–Medium</td><td class="mid">Medium</td><td class="mid">Medium</td><td>n cables</td><td>Token Ring / FDDI</td></tr>
+        <tr><td>Mesh</td><td class="bad">Very High</td><td class="good">Excellent</td><td class="bad">Low</td><td class="good">High</td><td>n(n–1)/2</td><td>WAN / Internet Core</td></tr>
+        <tr><td>Tree</td><td class="mid">Medium</td><td class="mid">Medium</td><td class="good">High</td><td class="mid">Medium</td><td>Hierarchical</td><td>Campus LAN</td></tr>
+        <tr><td>Hybrid</td><td class="mid">Variable</td><td class="good">High</td><td class="good">Very High</td><td class="good">High</td><td>Variable</td><td>Enterprise WAN</td></tr>
+      </tbody>
+    </table>
+    </div>
+  </div>
+</section>
 
-<div id="references" class="section">
-<h3>References</h3>
-<ul>
-<li>Tanenbaum</li>
-<li>Virtual Labs</li>
-</ul>
-</div>
+<!-- ═══════════════════════════════════ PROCEDURE ═══════════════════════════════════ -->
+<section id="procedure">
+  <h1>Procedure</h1>
+  <p style="margin-bottom:24px">Follow these steps to perform the network topology experiment using the Simulation tab.</p>
 
-<div id="contributors" class="section">
-<h3>Contributors</h3>
+  <div class="card" style="margin-bottom:24px">
+    <h2>Simulation Overview</h2>
+    <p>The Simulation tab lets you select any of 6 topologies, observe their structure, send a packet between two nodes, trigger node or link faults, and watch how each topology responds. Each topology is drawn live on the canvas.</p>
+  </div>
 
-<table>
-<tr><th>Name</th><th>Email</th><th>Institute</th></tr>
-<tr><td>ABHIROOP KALE</td><td>abhiroop206@gmail.com</td><td>Vidyalankar Institute of Technology</td></tr>
-</table>
+  <div class="proc-step">
+    <div class="proc-num">1</div>
+    <div class="proc-content">
+      <h4>Select a Topology</h4>
+      <p>Open the <strong>Simulation</strong> tab. Use the topology selector buttons (Bus / Star / Ring / Mesh / Tree / Hybrid) to choose a topology. The canvas will render the selected topology immediately.</p>
+      <div class="observe-box"><strong>Observe:</strong> Note the number of nodes, links, and layout pattern. Record the structure in your observation sheet.</div>
+    </div>
+  </div>
 
-<br>
+  <div class="proc-step">
+    <div class="proc-num">2</div>
+    <div class="proc-content">
+      <h4>Inspect Topology Statistics</h4>
+      <p>Check the <strong>Info Panel</strong> on the right side. It shows the number of nodes, total links, links per node, and fault tolerance rating for the selected topology.</p>
+      <div class="observe-box"><strong>Record:</strong> For each topology, note the values — compare how Mesh has far more links than Bus for the same number of nodes.</div>
+    </div>
+  </div>
 
-<table>
-<tr><th>Subject Expert</th><th>Institute</th></tr>
-<tr><td>Rakshak Sood</td><td>Vidyalankar Institute of Technology</td></tr>
-</table>
+  <div class="proc-step">
+    <div class="proc-num">3</div>
+    <div class="proc-content">
+      <h4>Send a Packet</h4>
+      <p>Click <strong>"▶ Send Packet"</strong>. An animated packet will travel from a source node to a destination node, following the path dictated by the topology. Watch the path highlight on the canvas.</p>
+      <div class="observe-box"><strong>Observe:</strong> In Bus topology, the packet travels the entire bus. In Star, it goes through the central hub. In Ring, it hops node-by-node. Log panel shows each hop.</div>
+    </div>
+  </div>
 
-</div>
+  <div class="proc-step">
+    <div class="proc-num">4</div>
+    <div class="proc-content">
+      <h4>Trigger a Fault</h4>
+      <p>Click <strong>"⚡ Simulate Fault"</strong> to randomly disable a node or link. The canvas will highlight the failed component in red. Then click "Send Packet" again to see how the network responds.</p>
+      <div class="observe-box"><strong>Record:</strong> Which topologies allow delivery even after a fault? (Mesh, Hybrid — yes. Bus, Ring — often no.) Document the result for each topology.</div>
+    </div>
+  </div>
 
-<div id="feedback" class="section">
-<h3>Feedback</h3>
-<textarea rows="5" cols="50"></textarea><br><br>
-<button>Submit</button>
-</div>
+  <div class="proc-step">
+    <div class="proc-num">5</div>
+    <div class="proc-content">
+      <h4>Repeat for All Topologies</h4>
+      <p>Repeat steps 1–4 for <strong>all 6 topologies</strong>. Use <strong>"↺ Reset"</strong> before switching if a fault was introduced. Fill in your observation table with the recorded data.</p>
+    </div>
+  </div>
 
-</div>
-</div>
+  <div class="proc-step">
+    <div class="proc-num">6</div>
+    <div class="proc-content">
+      <h4>Compare and Conclude</h4>
+      <p>Using your observations, answer: Which topology is best for a small office? A hospital (needing high redundancy)? A school campus? Relate your answers to the Theory section.</p>
+      <div class="observe-box"><strong>Expected Conclusion:</strong> Star for ease of management, Mesh for critical systems, Tree for large campuses, Hybrid for enterprise environments.</div>
+    </div>
+  </div>
 
+  <div class="card card-green" style="margin-top:8px">
+    <h2>Observation Table</h2>
+    <div style="overflow-x:auto">
+    <table class="comp-table" style="margin-top:8px">
+      <thead><tr><th>Topology</th><th>No. of Nodes</th><th>No. of Links</th><th>Packet Delivered (Normal)?</th><th>Packet Delivered (After Fault)?</th><th>Fault Tolerance</th></tr></thead>
+      <tbody>
+        <tr><td>Bus</td><td>___</td><td>___</td><td>___</td><td>___</td><td>___</td></tr>
+        <tr><td>Star</td><td>___</td><td>___</td><td>___</td><td>___</td><td>___</td></tr>
+        <tr><td>Ring</td><td>___</td><td>___</td><td>___</td><td>___</td><td>___</td></tr>
+        <tr><td>Mesh</td><td>___</td><td>___</td><td>___</td><td>___</td><td>___</td></tr>
+        <tr><td>Tree</td><td>___</td><td>___</td><td>___</td><td>___</td><td>___</td></tr>
+        <tr><td>Hybrid</td><td>___</td><td>___</td><td>___</td><td>___</td><td>___</td></tr>
+      </tbody>
+    </table>
+    </div>
+  </div>
+
+  <div class="card card-amber" style="margin-top:16px">
+    <h2>Result</h2>
+    <p>Six fundamental network topologies were studied and simulated. Each topology was analysed for its structure, packet routing behaviour, and fault response. It was observed that <strong>Mesh topology offers the highest fault tolerance</strong> while <strong>Bus topology is most vulnerable to failures</strong>. <strong>Star topology</strong> provides the best balance of cost and manageability for typical LANs, while <strong>Hybrid topology</strong> is preferred in real-world enterprise deployments due to its flexibility and resilience.</p>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════ SIMULATION ═══════════════════════════════════ -->
+<section id="simulation">
+  <div class="sim-toolbar">
+    <h2>Simulation</h2>
+    <button class="btn primary" id="btn-packet">▶ Send Packet</button>
+    <button class="btn danger" id="btn-fault">⚡ Simulate Fault</button>
+    <button class="btn" id="btn-reset">↺ Reset</button>
+  </div>
+
+  <div class="topo-selector" id="topo-selector">
+    <button class="topo-btn sel" onclick="selectTopo('bus',this)">Bus</button>
+    <button class="topo-btn" onclick="selectTopo('star',this)">Star</button>
+    <button class="topo-btn" onclick="selectTopo('ring',this)">Ring</button>
+    <button class="topo-btn" onclick="selectTopo('mesh',this)">Mesh</button>
+    <button class="topo-btn" onclick="selectTopo('tree',this)">Tree</button>
+    <button class="topo-btn" onclick="selectTopo('hybrid',this)">Hybrid</button>
+  </div>
+
+  <div id="sim-layout">
+    <div>
+      <div id="cvs-wrap"><canvas id="cvs" height="400"></canvas></div>
+      <p class="packet-info" id="packet-info">Select a topology and click Send Packet to begin</p>
+    </div>
+    <div>
+      <div class="info-panel" id="info-panel">
+        <div class="info-panel-head">
+          <span class="info-panel-title" id="topo-title">Bus Topology</span>
+          <span class="info-panel-sub" id="topo-sub">6 nodes</span>
+        </div>
+        <div class="info-panel-body" id="topo-stats">
+          <div class="stat-row"><span class="stat-key">Nodes</span><span class="stat-val" id="stat-nodes">—</span></div>
+          <div class="stat-row"><span class="stat-key">Links</span><span class="stat-val" id="stat-links">—</span></div>
+          <div class="stat-row"><span class="stat-key">Links / Node</span><span class="stat-val" id="stat-lpn">—</span></div>
+          <div class="stat-row"><span class="stat-key">Fault Tolerance</span><span class="stat-val" id="stat-ft">—</span></div>
+          <div class="stat-row"><span class="stat-key">Cost</span><span class="stat-val" id="stat-cost">—</span></div>
+          <div class="stat-row"><span class="stat-key">Real Protocol</span><span class="stat-val" id="stat-proto">—</span></div>
+        </div>
+      </div>
+      <div id="log-panel">
+        <div class="info-panel-head" onclick="toggleLog()">
+          <span class="info-panel-title">Event Log</span>
+          <span class="info-panel-sub" id="log-count">0 events</span>
+        </div>
+        <div id="log-body"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════ QUIZ ═══════════════════════════════════ -->
+<section id="quiz">
+  <h1>Knowledge Check</h1>
+  <p style="margin-bottom:24px">Test your understanding of network topologies with these questions.</p>
+  <div id="quiz-container"></div>
+</section>
+
+<!-- ═══════════════════════════════════ ABOUT ═══════════════════════════════════ -->
+<section id="about">
+  <h1>About This Lab</h1>
+
+  <div class="card card-accent" style="margin-top:16px">
+    <h2>Overview</h2>
+    <p>This virtual lab was developed as part of the <strong>Computer Networks Laboratory</strong> curriculum for undergraduate engineering students. It provides an interactive, browser-based simulation of the six fundamental network topologies — no software installation required.</p>
+    <p>The simulation visualises node and link structure, animates packet transmission paths, and demonstrates fault behaviour — helping students build intuition about real-world network design trade-offs.</p>
+  </div>
+
+  <div class="card" style="margin-top:12px">
+    <h2>Technologies Used</h2>
+    <ul class="step-list">
+      <li><span><strong>HTML5 Canvas</strong> — for drawing topology diagrams and packet animations</span></li>
+      <li><span><strong>Vanilla JavaScript</strong> — full topology engine, packet routing, and fault simulation with no dependencies</span></li>
+      <li><span><strong>CSS3</strong> — responsive dark-theme layout matching the DVR Lab design language</span></li>
+      <li><span><strong>Google Fonts</strong> — Syne, JetBrains Mono, Inter</span></li>
+    </ul>
+  </div>
+
+  <div class="card card-purple" style="margin-top:12px">
+    <h2>References</h2>
+    <ul class="step-list">
+      <li><span>Tanenbaum, A. S. &amp; Wetherall, D. J. — <em>Computer Networks</em>, 5th Edition, Prentice Hall</span></li>
+      <li><span>Forouzan, B. A. — <em>Data Communications and Networking</em>, 5th Edition, McGraw-Hill</span></li>
+      <li><span>IEEE 802.3 Standard — Ethernet (Star/Bus topologies)</span></li>
+      <li><span>IEEE 802.5 Standard — Token Ring topology</span></li>
+      <li><span>ANSI X3T9.5 — FDDI (Dual Ring topology)</span></li>
+    </ul>
+  </div>
+</section>
+
+<script>
+/* ═══════════════════ NAV ═══════════════════ */
+function showSection(id,btn){
+  document.querySelectorAll('section').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  if(btn)btn.classList.add('active');
+  if(id==='simulation')setTimeout(()=>resize(),50);
+}
+
+/* ═══════════════════ QUIZ ═══════════════════ */
+const QUESTIONS=[
+  {q:"Which network topology connects all nodes to a single shared cable called a backbone?",opts:["Star","Ring","Bus","Mesh"],ans:2,exp:"Bus topology uses a single backbone cable. All nodes attach to this shared medium and data travels to all nodes simultaneously."},
+  {q:"In Star topology, if the central switch fails, what happens?",opts:["Only one node is affected","Two nodes lose connectivity","The entire network goes down","Nothing — traffic reroutes automatically"],ans:2,exp:"The central switch is a single point of failure in Star topology. If it fails, all nodes connected to it lose network access."},
+  {q:"How many links does a Full Mesh network with 5 nodes require?",opts:["5","8","10","15"],ans:2,exp:"Full mesh requires n(n–1)/2 links. For n=5: 5×4/2 = 10 links."},
+  {q:"Which topology uses a token-passing protocol to control access?",opts:["Star","Bus","Ring","Tree"],ans:2,exp:"Ring topology uses token passing — only the node holding the token can transmit, eliminating collisions."},
+  {q:"A school wants to connect three floors, each with a star-wired lab, via a central backbone. Which topology does this describe?",opts:["Bus","Ring","Mesh","Tree"],ans:3,exp:"Tree (Hierarchical) topology connects multiple star networks through a backbone. It is commonly used in campus and multi-floor building networks."},
+  {q:"Which topology offers the highest fault tolerance?",opts:["Bus","Star","Ring","Mesh"],ans:3,exp:"Full Mesh topology has redundant paths between every pair of nodes. If one link fails, data can be rerouted via an alternate path automatically."},
+  {q:"The Internet backbone primarily uses which type of topology?",opts:["Bus","Star","Partial Mesh","Ring"],ans:2,exp:"The Internet core uses a Partial Mesh topology — key routers have multiple redundant connections, but not every router is connected to every other."},
+  {q:"In Bus topology, what is the purpose of terminator resistors placed at both ends?",opts:["To boost the signal","To prevent signal reflection","To act as firewalls","To measure network traffic"],ans:1,exp:"Terminators absorb electrical signals at the ends of the bus cable, preventing them from reflecting back and causing interference or data corruption."},
+];
+let qIdx=0,qScore=0,qAnswered=false;
+function renderQuiz(){
+  if(qIdx>=QUESTIONS.length){document.getElementById('quiz-container').innerHTML=`<div class="quiz-score"><div class="score-num">${qScore}/${QUESTIONS.length}</div><div class="score-label">Final Score</div><button class="btn primary" onclick="qIdx=0;qScore=0;renderQuiz()" style="margin-top:8px">Try Again ↺</button></div>`;return;}
+  const q=QUESTIONS[qIdx];
+  let dots='';
+  QUESTIONS.forEach((_,i)=>{dots+=`<div class="quiz-dot ${i<qIdx?'done':i===qIdx?'active':''}"></div>`;});
+  document.getElementById('quiz-container').innerHTML=`
+    <div class="quiz-progress">${dots}</div>
+    <div class="quiz-q">${q.q}</div>
+    <div class="quiz-opts">${q.opts.map((o,i)=>`<button class="quiz-opt" id="qo${i}" onclick="answerQ(${i})">${o}</button>`).join('')}</div>
+    <div id="qfeedback"></div>
+    <button class="btn primary" id="qnext" onclick="qIdx++;renderQuiz()" style="display:none">Next Question →</button>`;
+}
+function answerQ(idx){
+  if(qAnswered)return;qAnswered=true;
+  const q=QUESTIONS[qIdx];
+  const correct=idx===q.ans;
+  if(correct)qScore++;
+  document.querySelectorAll('.quiz-opt').forEach((b,i)=>{
+    b.disabled=true;
+    if(i===q.ans)b.classList.add('correct');
+    else if(i===idx)b.classList.add('wrong');
+  });
+  document.getElementById('qfeedback').innerHTML=`<div class="quiz-feedback ${correct?'correct':'wrong'}">${correct?'✓ Correct!':'✗ Incorrect.'} ${q.exp}</div>`;
+  document.getElementById('qnext').style.display='inline-block';
+  qAnswered=false;
+}
+renderQuiz();
+
+/* ═══════════════════ SIMULATION ENGINE ═══════════════════ */
+const cvs=document.getElementById('cvs');
+const ctx=cvs.getContext('2d');
+
+// Topology metadata
+const TOPO_META={
+  bus:{name:'Bus Topology',ft:'Low',cost:'Low',proto:'10BASE2 Ethernet'},
+  star:{name:'Star Topology',ft:'Medium',cost:'Medium',proto:'IEEE 802.3 (Ethernet)'},
+  ring:{name:'Ring Topology',ft:'Low–Medium',cost:'Medium',proto:'Token Ring / FDDI'},
+  mesh:{name:'Mesh Topology',ft:'Excellent',cost:'Very High',proto:'WAN / Internet Core'},
+  tree:{name:'Tree Topology',ft:'Medium',cost:'Medium',proto:'Campus LAN / CATV'},
+  hybrid:{name:'Hybrid Topology',ft:'High',cost:'Variable',proto:'Enterprise WAN'}
+};
+
+let currentTopo='bus';
+let nodes=[], links=[], faultedNodes=new Set(), faultedLinks=new Set();
+let packetAnim=null, animFrame=null;
+let logEntries=[];
+let dragging=null, dragOx=0, dragOy=0;
+
+function W(){return cvs.offsetWidth;}
+function H(){return cvs.height;}
+
+function buildBus(){
+  const w=W(),h=H();
+  nodes=[];links=[];
+  const N=6; const y=h/2;
+  const xs=[0.1,0.22,0.38,0.55,0.72,0.88];
+  for(let i=0;i<N;i++) nodes.push({id:i,x:xs[i]*w,y:y+((i%2===0)?-80:80),label:'N'+(i+1),color:'#3b82f6'});
+  // bus backbone as a virtual "wire" — links connect each node to the backbone (drawn as a line)
+  // We simulate as a chain for link drawing
+  for(let i=0;i<N-1;i++) links.push({a:i,b:i+1,bus:true});
+}
+
+function buildStar(){
+  const w=W(),h=H();
+  nodes=[];links=[];
+  const N=6; const cx=w/2,cy=h/2, r=Math.min(w,h)*0.33;
+  nodes.push({id:0,x:cx,y:cy,label:'SW',color:'#f59e0b',isHub:true});
+  for(let i=0;i<N;i++){
+    const a=(i/N)*2*Math.PI - Math.PI/2;
+    nodes.push({id:i+1,x:cx+r*Math.cos(a),y:cy+r*Math.sin(a),label:'N'+(i+1),color:'#3b82f6'});
+    links.push({a:0,b:i+1});
+  }
+}
+
+function buildRing(){
+  const w=W(),h=H();
+  nodes=[];links=[];
+  const N=7; const cx=w/2,cy=h/2, r=Math.min(w,h)*0.34;
+  for(let i=0;i<N;i++){
+    const a=(i/N)*2*Math.PI - Math.PI/2;
+    nodes.push({id:i,x:cx+r*Math.cos(a),y:cy+r*Math.sin(a),label:'N'+(i+1),color:'#10b981'});
+  }
+  for(let i=0;i<N;i++) links.push({a:i,b:(i+1)%N});
+}
+
+function buildMesh(){
+  const w=W(),h=H();
+  nodes=[];links=[];
+  const N=6; const cx=w/2,cy=h/2, r=Math.min(w,h)*0.32;
+  for(let i=0;i<N;i++){
+    const a=(i/N)*2*Math.PI - Math.PI/2;
+    nodes.push({id:i,x:cx+r*Math.cos(a),y:cy+r*Math.sin(a),label:'N'+(i+1),color:'#8b5cf6'});
+  }
+  for(let i=0;i<N;i++) for(let j=i+1;j<N;j++) links.push({a:i,b:j});
+}
+
+function buildTree(){
+  const w=W(),h=H();
+  nodes=[];links=[];
+  // Root
+  nodes.push({id:0,x:w/2,y:h*0.1,label:'Root',color:'#ef4444'});
+  // Level 1
+  const l1=[w*0.28,w*0.72];
+  l1.forEach((x,i)=>{
+    nodes.push({id:i+1,x,y:h*0.35,label:'SW'+(i+1),color:'#f59e0b'});
+    links.push({a:0,b:i+1});
+  });
+  // Level 2
+  const l2=[[w*0.13,w*0.28,w*0.43],[w*0.57,w*0.72,w*0.87]];
+  let id=3;
+  l2.forEach((xs,pi)=>{
+    xs.forEach((x,j)=>{
+      nodes.push({id,x,y:h*0.65,label:'N'+(id-2),color:'#3b82f6'});
+      links.push({a:pi+1,b:id});
+      id++;
+    });
+  });
+}
+
+function buildHybrid(){
+  const w=W(),h=H();
+  nodes=[];links=[];
+  // Two star clusters connected by a ring backbone
+  // Cluster 1 hub
+  nodes.push({id:0,x:w*0.25,y:h*0.35,label:'HB1',color:'#f59e0b',isHub:true});
+  // Cluster 2 hub
+  nodes.push({id:1,x:w*0.75,y:h*0.35,label:'HB2',color:'#f59e0b',isHub:true});
+  // Backbone router
+  nodes.push({id:2,x:w*0.5,y:h*0.65,label:'RT',color:'#ec4899',isHub:true});
+  // Ring backbone
+  links.push({a:0,b:1});links.push({a:1,b:2});links.push({a:2,b:0});
+  // Cluster 1 leaves
+  const c1a=[[-0.16,-0.22],[-0.17,0.1],[-0.08,0.24]];
+  c1a.forEach(([dx,dy],i)=>{
+    const id=3+i;
+    nodes.push({id,x:w*0.25+dx*w,y:h*0.35+dy*h,label:'N'+(i+1),color:'#3b82f6'});
+    links.push({a:0,b:id});
+  });
+  // Cluster 2 leaves
+  const c2a=[[0.16,-0.22],[0.17,0.1],[0.08,0.24]];
+  c2a.forEach(([dx,dy],i)=>{
+    const id=6+i;
+    nodes.push({id,x:w*0.75+dx*w,y:h*0.35+dy*h,label:'N'+(i+4),color:'#3b82f6'});
+    links.push({a:1,b:id});
+  });
+}
+
+const TOPO_BUILDERS={bus:buildBus,star:buildStar,ring:buildRing,mesh:buildMesh,tree:buildTree,hybrid:buildHybrid};
+
+function buildTopo(name){
+  faultedNodes.clear();faultedLinks.clear();
+  if(animFrame){cancelAnimationFrame(animFrame);animFrame=null;}
+  packetAnim=null;
+  TOPO_BUILDERS[name]();
+}
+
+function selectTopo(name,btn){
+  currentTopo=name;
+  document.querySelectorAll('.topo-btn').forEach(b=>b.classList.remove('sel'));
+  if(btn)btn.classList.add('sel');
+  buildTopo(name);
+  updateStats();
+  draw();
+  addLog('info',`Loaded ${TOPO_META[name].name}`);
+  document.getElementById('packet-info').textContent='Click ▶ Send Packet to animate data flow';
+}
+
+function updateStats(){
+  const meta=TOPO_META[currentTopo];
+  const n=nodes.length, l=links.length;
+  document.getElementById('topo-title').textContent=meta.name;
+  document.getElementById('topo-sub').textContent=n+' nodes';
+  document.getElementById('stat-nodes').textContent=n;
+  document.getElementById('stat-links').textContent=l;
+  document.getElementById('stat-lpn').textContent=(l*2/n).toFixed(1)+' avg';
+  document.getElementById('stat-ft').textContent=meta.ft;
+  document.getElementById('stat-cost').textContent=meta.cost;
+  document.getElementById('stat-proto').textContent=meta.proto;
+}
+
+/* ═══ DRAW ═══ */
+function draw(){
+  const w=cvs.width,h=cvs.height;
+  ctx.clearRect(0,0,w,h);
+
+  // grid dots
+  ctx.fillStyle='rgba(100,130,180,0.06)';
+  for(let x=20;x<w;x+=32)for(let y=20;y<h;y+=32){ctx.beginPath();ctx.arc(x,y,1,0,6.28);ctx.fill();}
+
+  // Bus backbone line
+  if(currentTopo==='bus'){
+    const ys=H()/2;
+    const xs0=nodes[0]?nodes[0].x:50, xs1=nodes[nodes.length-1]?nodes[nodes.length-1].x:w-50;
+    ctx.beginPath();ctx.moveTo(xs0-20,ys);ctx.lineTo(xs1+20,ys);
+    ctx.strokeStyle='rgba(245,158,11,0.35)';ctx.lineWidth=5;ctx.stroke();
+    // drops from each node to bus
+    nodes.forEach(n=>{
+      ctx.beginPath();ctx.moveTo(n.x,n.y);ctx.lineTo(n.x,ys);
+      ctx.strokeStyle='rgba(100,150,220,0.25)';ctx.lineWidth=1.5;ctx.setLineDash([4,4]);ctx.stroke();
+      ctx.setLineDash([]);
+    });
+  }
+
+  // links
+  links.forEach((l,li)=>{
+    if(l.bus)return;
+    const na=nodes[l.a],nb=nodes[l.b];
+    if(!na||!nb)return;
+    const faulted=faultedLinks.has(li);
+    ctx.beginPath();ctx.moveTo(na.x,na.y);ctx.lineTo(nb.x,nb.y);
+    ctx.strokeStyle=faulted?'rgba(239,68,68,0.6)':'rgba(100,140,200,0.22)';
+    ctx.lineWidth=faulted?2:1.5;
+    if(faulted)ctx.setLineDash([6,4]);
+    ctx.stroke();ctx.setLineDash([]);
+  });
+
+  // packet animation overlay
+  if(packetAnim&&packetAnim.path&&packetAnim.t!=null){
+    const path=packetAnim.path;
+    // draw active path
+    for(let i=0;i<path.length-1;i++){
+      const na=nodes[path[i]],nb=nodes[path[i+1]];
+      if(!na||!nb)continue;
+      const done=i<Math.floor(packetAnim.t);
+      const active=i===Math.floor(packetAnim.t);
+      if(done||active){
+        ctx.beginPath();ctx.moveTo(na.x,na.y);ctx.lineTo(nb.x,nb.y);
+        ctx.strokeStyle=done?'rgba(16,185,129,0.5)':'rgba(59,130,246,0.8)';
+        ctx.lineWidth=done?2:3;ctx.stroke();
+      }
+    }
+    // packet dot
+    const seg=Math.floor(packetAnim.t);
+    if(seg<path.length-1){
+      const frac=packetAnim.t-seg;
+      const na=nodes[path[seg]],nb=nodes[path[seg+1]];
+      if(na&&nb){
+        const px=na.x+(nb.x-na.x)*frac;
+        const py=na.y+(nb.y-na.y)*frac;
+        ctx.beginPath();ctx.arc(px,py,7,0,6.28);
+        ctx.fillStyle='rgba(59,130,246,0.25)';ctx.fill();
+        ctx.beginPath();ctx.arc(px,py,4,0,6.28);
+        ctx.fillStyle='#60a5fa';ctx.fill();
+      }
+    }
+  }
+
+  // nodes
+  nodes.forEach((n,i)=>{
+    const faulted=faultedNodes.has(i);
+    const isActive=packetAnim&&packetAnim.path&&packetAnim.path.includes(i)&&packetAnim.t!=null;
+    const rad=n.isHub?22:17;
+    if(isActive||faulted){
+      ctx.beginPath();ctx.arc(n.x,n.y,rad+9,0,6.28);
+      ctx.fillStyle=faulted?'rgba(239,68,68,0.12)':'rgba(59,130,246,0.12)';ctx.fill();
+    }
+    ctx.beginPath();ctx.arc(n.x,n.y,rad,0,6.28);
+    ctx.fillStyle='rgba(17,24,39,0.95)';ctx.fill();
+    ctx.strokeStyle=faulted?'#ef4444':isActive?'#60a5fa':n.color;
+    ctx.lineWidth=1.8;ctx.stroke();
+    ctx.beginPath();ctx.arc(n.x,n.y,rad-6,0,6.28);
+    ctx.fillStyle=n.color+'18';ctx.fill();
+    ctx.font=(n.isHub?'500 10px':'500 11px')+' Syne,sans-serif';
+    ctx.fillStyle=faulted?'#ef4444':n.color;
+    ctx.textAlign='center';ctx.textBaseline='middle';
+    ctx.fillText(n.label,n.x,n.y);
+    if(faulted){
+      ctx.font='bold 11px sans-serif';ctx.fillStyle='#ef4444';
+      ctx.fillText('✕',n.x+rad-3,n.y-rad+3);
+    }
+  });
+}
+
+/* ═══ PACKET ROUTING ═══ */
+function getPath(src,dst){
+  if(currentTopo==='bus'){
+    // all nodes on bus — direct via bus backbone
+    const path=[];
+    if(src<dst)for(let i=src;i<=dst;i++)path.push(i);
+    else for(let i=src;i>=dst;i--)path.push(i);
+    return path;
+  }
+  // BFS through links (excluding faulted)
+  const adj=buildAdj();
+  const visited=new Set([src]);
+  const prev=new Map();
+  const queue=[src];
+  while(queue.length){
+    const cur=queue.shift();
+    if(cur===dst){
+      const path=[];let c=dst;
+      while(c!==undefined){path.unshift(c);c=prev.get(c);}
+      return path;
+    }
+    (adj.get(cur)||[]).forEach(nb=>{
+      if(!visited.has(nb)){visited.add(nb);prev.set(nb,cur);queue.push(nb);}
+    });
+  }
+  return null; // no path
+}
+
+function buildAdj(){
+  const adj=new Map();
+  nodes.forEach((_,i)=>adj.set(i,[]));
+  links.forEach((l,li)=>{
+    if(faultedLinks.has(li))return;
+    if(faultedNodes.has(l.a)||faultedNodes.has(l.b))return;
+    adj.get(l.a).push(l.b);
+    adj.get(l.b).push(l.a);
+  });
+  // remove faulted nodes from adj
+  faultedNodes.forEach(fn=>adj.delete(fn));
+  return adj;
+}
+
+function sendPacket(){
+  if(packetAnim)return;
+  const available=nodes.map((_,i)=>i).filter(i=>!faultedNodes.has(i));
+  if(available.length<2){addLog('warn','Not enough active nodes to send packet');return;}
+  const src=available[0];
+  const dst=available[available.length-1];
+  const path=getPath(src,dst);
+  if(!path||path.length<2){
+    addLog('warn',`⚡ No path from ${nodes[src].label} to ${nodes[dst].label} — network partitioned`);
+    document.getElementById('packet-info').textContent='❌ Packet could not be delivered — network partitioned';
+    return;
+  }
+  addLog('info',`Packet: ${nodes[src].label} → ${nodes[dst].label} (${path.length-1} hops)`);
+  path.forEach((n,i)=>{if(i>0)addLog('success',`  Hop ${i}: via ${nodes[n].label}`);});
+  document.getElementById('packet-info').textContent=`Packet: ${nodes[src].label} → ${nodes[dst].label} · ${path.length-1} hops`;
+  packetAnim={path,t:0};
+  function step(){
+    packetAnim.t+=0.04;
+    draw();
+    if(packetAnim.t<path.length-1){animFrame=requestAnimationFrame(step);}
+    else{
+      addLog('success',`✓ Delivered to ${nodes[dst].label}`);
+      packetAnim={...packetAnim,t:path.length-1};
+      draw();
+      setTimeout(()=>{packetAnim=null;draw();},1200);
+    }
+  }
+  animFrame=requestAnimationFrame(step);
+}
+
+function simulateFault(){
+  // randomly fault a node or link
+  const rnd=Math.random();
+  if(rnd<0.5&&nodes.length>0){
+    // fault a random non-hub node
+    const candidates=nodes.map((_,i)=>i).filter(i=>!nodes[i].isHub&&!faultedNodes.has(i));
+    if(candidates.length){
+      const fi=candidates[Math.floor(Math.random()*candidates.length)];
+      faultedNodes.add(fi);
+      addLog('warn',`⚡ Node fault: ${nodes[fi].label} disconnected`);
+      document.getElementById('packet-info').textContent=`⚡ Fault: ${nodes[fi].label} has failed`;
+    }
+  } else if(links.length>0){
+    const candidates=links.map((_,i)=>i).filter(i=>!faultedLinks.has(i)&&!links[i].bus);
+    if(candidates.length){
+      const fi=candidates[Math.floor(Math.random()*candidates.length)];
+      faultedLinks.add(fi);
+      const l=links[fi];
+      addLog('warn',`⚡ Link fault: ${nodes[l.a].label}↔${nodes[l.b].label} severed`);
+      document.getElementById('packet-info').textContent=`⚡ Fault: link ${nodes[l.a].label}↔${nodes[l.b].label} failed`;
+    }
+  }
+  draw();
+}
+
+function resetSim(){
+  if(animFrame){cancelAnimationFrame(animFrame);animFrame=null;}
+  packetAnim=null;
+  buildTopo(currentTopo);
+  updateStats();
+  draw();
+  logEntries=[];renderLog();
+  document.getElementById('packet-info').textContent='Click ▶ Send Packet to animate data flow';
+  addLog('info',`Reset — ${TOPO_META[currentTopo].name}`);
+}
+
+/* ═══ LOG ═══ */
+function addLog(type,msg){
+  logEntries=[{type,msg},...logEntries].slice(0,80);
+  renderLog();
+}
+function renderLog(){
+  document.getElementById('log-count').textContent=logEntries.length+' events';
+  document.getElementById('log-body').innerHTML=logEntries.slice(0,30).map(l=>`<div class="log-entry ${l.type}">${l.msg}</div>`).join('');
+}
+function toggleLog(){
+  const b=document.getElementById('log-body');
+  b.style.display=b.style.display==='none'?'block':'none';
+}
+
+/* ═══ RESIZE ═══ */
+function resize(){
+  cvs.width=cvs.offsetWidth;
+  cvs.height=400;
+  buildTopo(currentTopo);
+  updateStats();
+  draw();
+}
+
+/* ═══ DRAG ═══ */
+function getNodeAt(ex,ey){
+  const rect=cvs.getBoundingClientRect();
+  const sx=cvs.width/rect.width;
+  const mx=(ex-rect.left)*sx,my=(ey-rect.top)*(400/rect.height);
+  for(let i=0;i<nodes.length;i++){
+    if(Math.hypot(nodes[i].x-mx,nodes[i].y-my)<26)return i;
+  }return null;
+}
+cvs.addEventListener('mousedown',e=>{const r=getNodeAt(e.clientX,e.clientY);if(r!=null){dragging=r;dragOx=e.clientX;dragOy=e.clientY;}});
+cvs.addEventListener('mousemove',e=>{
+  if(dragging==null)return;
+  const rect=cvs.getBoundingClientRect();
+  nodes[dragging].x=Math.min(cvs.width-20,Math.max(20,(e.clientX-rect.left)*(cvs.width/rect.width)));
+  nodes[dragging].y=Math.min(cvs.height-20,Math.max(20,(e.clientY-rect.top)*(cvs.height/rect.height)));
+  draw();
+});
+cvs.addEventListener('mouseup',e=>{dragging=null;draw();});
+cvs.addEventListener('touchstart',e=>{const t=e.touches[0];const r=getNodeAt(t.clientX,t.clientY);if(r!=null){dragging=r;dragOx=t.clientX;dragOy=t.clientY;e.preventDefault();}},{passive:false});
+cvs.addEventListener('touchmove',e=>{
+  if(dragging==null)return;const t=e.touches[0];
+  const rect=cvs.getBoundingClientRect();
+  nodes[dragging].x=Math.min(cvs.width-20,Math.max(20,(t.clientX-rect.left)*(cvs.width/rect.width)));
+  nodes[dragging].y=Math.min(cvs.height-20,Math.max(20,(t.clientY-rect.top)*(cvs.height/rect.height)));
+  draw();e.preventDefault();
+},{passive:false});
+cvs.addEventListener('touchend',()=>{dragging=null;draw();});
+
+document.getElementById('btn-packet').addEventListener('click',sendPacket);
+document.getElementById('btn-fault').addEventListener('click',simulateFault);
+document.getElementById('btn-reset').addEventListener('click',resetSim);
+
+window.addEventListener('resize',()=>{if(document.getElementById('simulation').classList.contains('active'))resize();});
+
+// Init
+buildTopo('bus');updateStats();
+setTimeout(()=>{resize();addLog('info','Network Topology Lab loaded');},100);
+</script>
 </body>
 </html>
